@@ -8,6 +8,8 @@ minor release may contain breaking changes; they are listed under "Changed" or "
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-09-20
+
 ### Added
 
 - `TradeApiClient`, an async client for the BCS Trade API with typed services for
@@ -21,4 +23,5 @@ minor release may contain breaking changes; they are listed under "Changed" or "
 - Pydantic models for every request and response, with `Decimal` for money, prices and
   quantities.
 
-[Unreleased]: https://github.com/kostrse/bacsy-py/commits/main
+[Unreleased]: https://github.com/kostrse/bacsy-py/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/kostrse/bacsy-py/releases/tag/v0.1.0

@@ -1,6 +1,6 @@
 [project]
 name = "bacsy"
-version = "0.1.0.dev0"
+version = "0.1.0"
 description = "Unofficial async Python client for the BCS Trade API"
 readme = "README.md"
 requires-python = ">=3.12"
