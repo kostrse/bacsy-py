@@ -8,6 +8,12 @@ minor release may contain breaking changes; they are listed under "Changed" or "
 
 ## [Unreleased]
 
+### Changed
+
+- Replaced `httpx` with [`httpx2`](https://pydantic.dev/docs/httpx2/get-started/migration/).
+  Injected HTTP pools must now be `httpx2.AsyncClient` instances; the default pool uses
+  the operating system's trust store for TLS verification.
+
 ## [0.1.0] - 2026-09-20
 
 ### Added

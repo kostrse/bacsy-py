@@ -6,7 +6,7 @@ from collections.abc import AsyncIterator, Callable
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Protocol
 
-import httpx
+import httpx2
 import pytest
 
 from bacsy import ApiHttpClient, ClientConfig, TradeApiClient
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from bacsy.auth import AccessTokenProvider
     from bacsy.ratelimit import RateLimiter
 
-Handler = Callable[[httpx.Request], httpx.Response]
+Handler = Callable[[httpx2.Request], httpx2.Response]
 
 
 class ClientFactory(Protocol):
@@ -53,9 +53,9 @@ async def make_client() -> AsyncIterator[ClientFactory]:
     """Build clients over a mock transport and close the pools after the test.
 
     Each client is a ``TradeApiClient`` over an ``ApiHttpClient`` that uses a static
-    token provider and an ``httpx.MockTransport`` pool, so no credentials are resolved.
+    token provider and an ``httpx2.MockTransport`` pool, so no credentials are resolved.
     """
-    pools: list[httpx.AsyncClient] = []
+    pools: list[httpx2.AsyncClient] = []
 
     def factory(
         handler: Handler,
@@ -67,8 +67,8 @@ async def make_client() -> AsyncIterator[ClientFactory]:
         rate_limiter: RateLimiter | None = None,
     ) -> TradeApiClient:
         config = config or ClientConfig()
-        pool = httpx.AsyncClient(
-            transport=httpx.MockTransport(handler), base_url=config.rest_base_url
+        pool = httpx2.AsyncClient(
+            transport=httpx2.MockTransport(handler), base_url=config.rest_base_url
         )
         pools.append(pool)
         http = ApiHttpClient(

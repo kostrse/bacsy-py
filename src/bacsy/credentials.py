@@ -22,7 +22,7 @@ from bacsy.exceptions import ConfigurationError
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
 
-    import httpx
+    import httpx2
 
     from bacsy.auth.protocols import AccessTokenCache
 
@@ -36,7 +36,7 @@ _REFRESH_TOKEN_ENV = "BACSY_REFRESH_TOKEN"
 def account_token_provider(
     name: str | None = None,
     *,
-    http: httpx.AsyncClient,
+    http: httpx2.AsyncClient,
     config: ClientConfig | None = None,
     cache: AccessTokenCache | None = None,
     accounts: AccountManager | None = None,
@@ -76,7 +76,7 @@ def account_token_provider(
 def refresh_token_provider(
     token: str | Iterable[str] | None = None,
     *,
-    http: httpx.AsyncClient,
+    http: httpx2.AsyncClient,
     config: ClientConfig | None = None,
     cache: AccessTokenCache | None = None,
     env: Mapping[str, str] | None = None,

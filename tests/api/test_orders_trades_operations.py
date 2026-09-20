@@ -7,7 +7,7 @@ from decimal import Decimal
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-import httpx
+import httpx2
 
 from bacsy.api import NonTradeOperationsService, OrdersService, TradesService
 from bacsy.api.orders import CANCEL_ORDER, CREATE_ORDER, EDIT_ORDER
@@ -70,7 +70,7 @@ async def test_create_limit_order(transport: ApiHttpClient, recorder: Recorder) 
 async def test_create_generates_client_order_id(
     transport: ApiHttpClient, recorder: Recorder
 ) -> None:
-    recorder.respond(lambda request: httpx.Response(200, content=request.read()))
+    recorder.respond(lambda request: httpx2.Response(200, content=request.read()))
 
     result = await OrdersService(transport).create(
         ticker="SBER", class_code="TQBR", side=Side.SELL, order_type=OrderType.MARKET, quantity=1

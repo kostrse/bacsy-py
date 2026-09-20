@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
     from types import TracebackType
 
-    import httpx
+    import httpx2
 
     from bacsy.accounts import AccountManager
     from bacsy.auth.protocols import AccessTokenCache, AccessTokenProvider
@@ -54,7 +54,7 @@ class TradeApiClient:
         self, http: ApiHttpClient, *, ws_connector: WebSocketConnector | None = None
     ) -> None:
         self._http: ApiHttpClient = http
-        self._owned_pool: httpx.AsyncClient | None = None
+        self._owned_pool: httpx2.AsyncClient | None = None
         self.streams: StreamFactory = StreamFactory(
             config=http.config,
             token_provider=http.token_provider,
@@ -66,10 +66,10 @@ class TradeApiClient:
     @classmethod
     def _assemble(
         cls,
-        make_provider: Callable[[httpx.AsyncClient, ClientConfig], AccessTokenProvider],
+        make_provider: Callable[[httpx2.AsyncClient, ClientConfig], AccessTokenProvider],
         *,
         config: ClientConfig | None,
-        http: httpx.AsyncClient | None,
+        http: httpx2.AsyncClient | None,
         ws_connector: WebSocketConnector | None,
     ) -> Self:
         config = config or ClientConfig()
@@ -88,7 +88,7 @@ class TradeApiClient:
         config: ClientConfig | None = None,
         cache: AccessTokenCache | None = None,
         accounts: AccountManager | None = None,
-        http: httpx.AsyncClient | None = None,
+        http: httpx2.AsyncClient | None = None,
         ws_connector: WebSocketConnector | None = None,
     ) -> Self:
         """Build a client for a saved account.
@@ -118,7 +118,7 @@ class TradeApiClient:
         *,
         config: ClientConfig | None = None,
         cache: AccessTokenCache | None = None,
-        http: httpx.AsyncClient | None = None,
+        http: httpx2.AsyncClient | None = None,
         ws_connector: WebSocketConnector | None = None,
     ) -> Self:
         """Build a client that mints access tokens from one or more refresh tokens.
@@ -145,7 +145,7 @@ class TradeApiClient:
         token: str,
         *,
         config: ClientConfig | None = None,
-        http: httpx.AsyncClient | None = None,
+        http: httpx2.AsyncClient | None = None,
         ws_connector: WebSocketConnector | None = None,
     ) -> Self:
         """Build a client that uses a fixed access token and never refreshes it."""

@@ -17,7 +17,7 @@ from bacsy.exceptions import NoUsableTokenError, TokenRefreshError, TokenRefresh
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable, Mapping, Sequence
 
-    import httpx
+    import httpx2
 
     from bacsy.auth.protocols import AccessTokenCache
     from bacsy.auth.tokens import RefreshToken
@@ -80,7 +80,7 @@ class RefreshingAccessTokenProvider:
         self,
         tokens: RefreshTokenSource,
         *,
-        http: httpx.AsyncClient,
+        http: httpx2.AsyncClient,
         cache: AccessTokenCache | None = None,
         on_rejected: RejectionHook | None = None,
         token_path: str = TOKEN_ENDPOINT_PATH,
@@ -90,7 +90,7 @@ class RefreshingAccessTokenProvider:
     ) -> None:
         self._source: RefreshTokenSource = tokens
         self._tokens: tuple[RefreshToken, ...] | None = None
-        self._http: httpx.AsyncClient = http
+        self._http: httpx2.AsyncClient = http
         self._cache: AccessTokenCache = cache if cache is not None else MemoryAccessTokenCache()
         self._on_rejected: RejectionHook | None = on_rejected
         self._token_path: str = token_path

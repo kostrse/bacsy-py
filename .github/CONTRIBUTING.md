@@ -59,7 +59,7 @@ These are the things a review checks.
 - The exact terms are "refresh token" and "access token". User-facing text may say
   "API token (refresh token)" once, on first use, and "refresh token" after that.
 
-Dependencies stay at `httpx`, `pydantic` and `websockets` unless an issue agrees on
+Dependencies stay at `httpx2`, `pydantic` and `websockets` unless an issue agrees on
 more. Never disable a lint rule, add a blanket `# type: ignore` or filter a warning to
 make a check pass; fix the cause, or explain why a targeted suppression is right.
 

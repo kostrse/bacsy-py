@@ -30,7 +30,7 @@ from tests.auth.fakes import DAY, Keycloak, make_refresh_token
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Sequence
 
-    import httpx
+    import httpx2
 
     from tests.conftest import FakeClock
 
@@ -41,7 +41,7 @@ def keycloak(fake_clock: FakeClock) -> Keycloak:
 
 
 @pytest.fixture
-async def http(keycloak: Keycloak) -> AsyncIterator[httpx.AsyncClient]:
+async def http(keycloak: Keycloak) -> AsyncIterator[httpx2.AsyncClient]:
     async with keycloak.http() as client:
         yield client
 
@@ -65,7 +65,7 @@ class Rejections:
 
 
 def _provider(
-    http: httpx.AsyncClient,
+    http: httpx2.AsyncClient,
     fake_clock: FakeClock,
     tokens: Sequence[RefreshToken],
     cache: MemoryAccessTokenCache | None = None,
@@ -92,7 +92,7 @@ async def test_static_provider_ignores_scope() -> None:
 
 
 async def test_first_call_exchanges_with_matching_client_and_caches_by_session(
-    http: httpx.AsyncClient, fake_clock: FakeClock, keycloak: Keycloak
+    http: httpx2.AsyncClient, fake_clock: FakeClock, keycloak: Keycloak
 ) -> None:
     account = (_token(fake_clock, sid="s1"),)
     provider, cache = _provider(http, fake_clock, account)
@@ -109,7 +109,7 @@ async def test_first_call_exchanges_with_matching_client_and_caches_by_session(
 
 
 async def test_expiry_triggers_a_new_exchange(
-    http: httpx.AsyncClient, fake_clock: FakeClock, keycloak: Keycloak
+    http: httpx2.AsyncClient, fake_clock: FakeClock, keycloak: Keycloak
 ) -> None:
     account = (_token(fake_clock, sid="s1"),)
     provider, _ = _provider(http, fake_clock, account)
@@ -122,7 +122,7 @@ async def test_expiry_triggers_a_new_exchange(
 
 
 async def test_reuses_a_cached_access_token_from_a_previous_process(
-    http: httpx.AsyncClient, fake_clock: FakeClock, keycloak: Keycloak
+    http: httpx2.AsyncClient, fake_clock: FakeClock, keycloak: Keycloak
 ) -> None:
     cache = MemoryAccessTokenCache()
     await cache.set(
@@ -136,7 +136,7 @@ async def test_reuses_a_cached_access_token_from_a_previous_process(
 
 
 async def test_read_prefers_the_read_token_and_write_uses_the_write_token(
-    http: httpx.AsyncClient, fake_clock: FakeClock, keycloak: Keycloak
+    http: httpx2.AsyncClient, fake_clock: FakeClock, keycloak: Keycloak
 ) -> None:
     account = (
         _token(fake_clock, scope=TokenScope.WRITE, sid="w"),
@@ -154,7 +154,7 @@ async def test_read_prefers_the_read_token_and_write_uses_the_write_token(
 
 
 async def test_write_only_account_serves_both_scopes_with_one_exchange(
-    http: httpx.AsyncClient, fake_clock: FakeClock, keycloak: Keycloak
+    http: httpx2.AsyncClient, fake_clock: FakeClock, keycloak: Keycloak
 ) -> None:
     account = (_token(fake_clock, scope=TokenScope.WRITE, sid="w"),)
     provider, _ = _provider(http, fake_clock, account)
@@ -167,7 +167,7 @@ async def test_write_only_account_serves_both_scopes_with_one_exchange(
 
 
 async def test_revoked_token_is_reported_and_skipped(
-    http: httpx.AsyncClient,
+    http: httpx2.AsyncClient,
     fake_clock: FakeClock,
     keycloak: Keycloak,
     caplog: pytest.LogCaptureFixture,
@@ -194,7 +194,7 @@ async def test_revoked_token_is_reported_and_skipped(
 
 
 async def test_server_side_expiry_is_reported(
-    http: httpx.AsyncClient, fake_clock: FakeClock, keycloak: Keycloak
+    http: httpx2.AsyncClient, fake_clock: FakeClock, keycloak: Keycloak
 ) -> None:
     stale = _token(fake_clock, days=1, sid="stale")
     fresh = _token(fake_clock, scope=TokenScope.WRITE, days=50, sid="fresh")
@@ -211,7 +211,7 @@ async def test_server_side_expiry_is_reported(
 
 
 async def test_invalid_token_is_reported_and_skipped_for_the_process(
-    http: httpx.AsyncClient, fake_clock: FakeClock, keycloak: Keycloak
+    http: httpx2.AsyncClient, fake_clock: FakeClock, keycloak: Keycloak
 ) -> None:
     bad = _token(fake_clock, days=80, sid="bad")
     good = _token(fake_clock, days=20, sid="good")
@@ -231,16 +231,16 @@ async def test_invalid_token_is_reported_and_skipped_for_the_process(
 async def test_unknown_rejection_raises_without_marking(
     fake_clock: FakeClock,
 ) -> None:
-    import httpx
+    import httpx2
 
-    def handler(request: httpx.Request) -> httpx.Response:
-        return httpx.Response(
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        return httpx2.Response(
             400, json={"error": "invalid_grant", "error_description": "Something new"}
         )
 
     account = (_token(fake_clock, sid="s1"),)
-    async with httpx.AsyncClient(
-        transport=httpx.MockTransport(handler), base_url="https://be.broker.ru"
+    async with httpx2.AsyncClient(
+        transport=httpx2.MockTransport(handler), base_url="https://be.broker.ru"
     ) as http:
         rejections = Rejections()
         provider, _ = _provider(http, fake_clock, account, on_rejected=rejections)
@@ -254,16 +254,16 @@ async def test_unknown_rejection_raises_without_marking(
 
 @pytest.mark.parametrize("failure", ["transport", "server"])
 async def test_transport_and_server_errors_propagate(fake_clock: FakeClock, failure: str) -> None:
-    import httpx
+    import httpx2
 
-    def handler(request: httpx.Request) -> httpx.Response:
+    def handler(request: httpx2.Request) -> httpx2.Response:
         if failure == "transport":
-            raise httpx.ConnectError("down", request=request)
-        return httpx.Response(503, text="down")
+            raise httpx2.ConnectError("down", request=request)
+        return httpx2.Response(503, text="down")
 
     account = (_token(fake_clock, sid="s1"),)
-    async with httpx.AsyncClient(
-        transport=httpx.MockTransport(handler), base_url="https://be.broker.ru"
+    async with httpx2.AsyncClient(
+        transport=httpx2.MockTransport(handler), base_url="https://be.broker.ru"
     ) as http:
         provider, _ = _provider(http, fake_clock, account)
         with pytest.raises(TransportError if failure == "transport" else ServerError):
@@ -271,7 +271,7 @@ async def test_transport_and_server_errors_propagate(fake_clock: FakeClock, fail
 
 
 async def test_exhausted_account_raises_a_redacted_summary(
-    http: httpx.AsyncClient, fake_clock: FakeClock, keycloak: Keycloak
+    http: httpx2.AsyncClient, fake_clock: FakeClock, keycloak: Keycloak
 ) -> None:
     expired = _token(fake_clock, days=-1, sid="expired")
     revoked = _token(fake_clock, scope=TokenScope.WRITE, days=10, sid="revoked")
@@ -296,7 +296,7 @@ async def test_exhausted_account_raises_a_redacted_summary(
 
 
 async def test_read_only_tokens_cannot_serve_a_write(
-    http: httpx.AsyncClient, fake_clock: FakeClock, keycloak: Keycloak
+    http: httpx2.AsyncClient, fake_clock: FakeClock, keycloak: Keycloak
 ) -> None:
     provider, _ = _provider(http, fake_clock, (_token(fake_clock, days=10, sid="read"),))
 
@@ -308,7 +308,7 @@ async def test_read_only_tokens_cannot_serve_a_write(
     assert keycloak.calls == []
 
 
-async def test_empty_account_raises(http: httpx.AsyncClient, fake_clock: FakeClock) -> None:
+async def test_empty_account_raises(http: httpx2.AsyncClient, fake_clock: FakeClock) -> None:
     provider, _ = _provider(http, fake_clock, ())
 
     with pytest.raises(NoUsableTokenError, match="no refresh tokens configured") as info:
@@ -319,7 +319,7 @@ async def test_empty_account_raises(http: httpx.AsyncClient, fake_clock: FakeClo
 
 
 async def test_concurrent_callers_share_one_exchange(
-    http: httpx.AsyncClient, fake_clock: FakeClock, keycloak: Keycloak
+    http: httpx2.AsyncClient, fake_clock: FakeClock, keycloak: Keycloak
 ) -> None:
     keycloak.delay = 0.01
     account = (_token(fake_clock, scope=TokenScope.WRITE, sid="w"),)
@@ -333,7 +333,7 @@ async def test_concurrent_callers_share_one_exchange(
 
 
 async def test_invalidate_drops_the_cache_entry_and_remints(
-    http: httpx.AsyncClient, fake_clock: FakeClock, keycloak: Keycloak
+    http: httpx2.AsyncClient, fake_clock: FakeClock, keycloak: Keycloak
 ) -> None:
     account = (_token(fake_clock, sid="s1"),)
     provider, cache = _provider(http, fake_clock, account)
@@ -348,7 +348,7 @@ async def test_invalidate_drops_the_cache_entry_and_remints(
 
 
 async def test_lazy_tokens_are_resolved_once(
-    http: httpx.AsyncClient, fake_clock: FakeClock
+    http: httpx2.AsyncClient, fake_clock: FakeClock
 ) -> None:
     resolutions = 0
     tokens = (_token(fake_clock, sid="s1"),)
@@ -368,7 +368,7 @@ async def test_lazy_tokens_are_resolved_once(
 
 
 async def test_lazy_tokens_failure_propagates(
-    http: httpx.AsyncClient, fake_clock: FakeClock
+    http: httpx2.AsyncClient, fake_clock: FakeClock
 ) -> None:
     async def resolve() -> tuple[RefreshToken, ...]:
         raise ConfigurationError("no account")
@@ -381,7 +381,7 @@ async def test_lazy_tokens_failure_propagates(
 
 @pytest.mark.parametrize(("days", "warned"), [(3, True), (30, False)])
 async def test_warns_once_when_the_chosen_token_expires_soon(
-    http: httpx.AsyncClient,
+    http: httpx2.AsyncClient,
     fake_clock: FakeClock,
     caplog: pytest.LogCaptureFixture,
     days: int,

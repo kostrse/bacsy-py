@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 from urllib.parse import parse_qs
 
-import httpx
+import httpx2
 
 from bacsy.auth import RefreshToken, TokenScope
 from bacsy.exceptions import InvalidTokenError
@@ -77,8 +77,8 @@ def make_refresh_token(
     )
 
 
-def _invalid_grant(description: str) -> httpx.Response:
-    return httpx.Response(400, json={"error": "invalid_grant", "error_description": description})
+def _invalid_grant(description: str) -> httpx2.Response:
+    return httpx2.Response(400, json={"error": "invalid_grant", "error_description": description})
 
 
 @dataclass
@@ -97,13 +97,13 @@ class Keycloak:
     delay: float = 0.0
     access_lifetime: float = DAY
 
-    def handler(self, request: httpx.Request) -> httpx.Response:
+    def handler(self, request: httpx2.Request) -> httpx2.Response:
         form = parse_qs(request.read().decode())
         self.calls.append(form)
         client_id = form.get("client_id", [""])[0]
         value = form.get("refresh_token", [""])[0]
         if client_id not in {s.value for s in TokenScope}:
-            return httpx.Response(
+            return httpx2.Response(
                 401,
                 json={
                     "error": "invalid_client",
@@ -123,7 +123,7 @@ class Keycloak:
         if token.sid in self.revoked:
             return _invalid_grant("Session not active")
         self.counter += 1
-        return httpx.Response(
+        return httpx2.Response(
             200,
             json={
                 "access_token": f"acc{self.counter}",
@@ -134,14 +134,14 @@ class Keycloak:
             },
         )
 
-    async def async_handler(self, request: httpx.Request) -> httpx.Response:
+    async def async_handler(self, request: httpx2.Request) -> httpx2.Response:
         if self.delay:
             await asyncio.sleep(self.delay)
         return self.handler(request)
 
-    def http(self, base_url: str = "https://be.broker.ru") -> httpx.AsyncClient:
-        return httpx.AsyncClient(
-            transport=httpx.MockTransport(self.async_handler), base_url=base_url
+    def http(self, base_url: str = "https://be.broker.ru") -> httpx2.AsyncClient:
+        return httpx2.AsyncClient(
+            transport=httpx2.MockTransport(self.async_handler), base_url=base_url
         )
 
     def client_ids(self) -> list[str]:

@@ -5,7 +5,7 @@ from __future__ import annotations
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
-import httpx
+import httpx2
 import pytest
 
 from bacsy import ClientConfig, StreamOptions, TradeApiClient
@@ -304,7 +304,7 @@ async def test_connection_budget(factory: StreamFactory) -> None:
 
 async def test_client_closes_its_streams() -> None:
     connector = FakeConnector()
-    http = httpx.AsyncClient(transport=httpx.MockTransport(lambda _: httpx.Response(200)))
+    http = httpx2.AsyncClient(transport=httpx2.MockTransport(lambda _: httpx2.Response(200)))
     client = TradeApiClient.from_access_token("t", http=http, ws_connector=connector)
     stream = client.streams.limits()
     await stream.start()

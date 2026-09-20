@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import httpx
+import httpx2
 
 from bacsy.api import (
     InstrumentsService,
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 
 async def test_services_are_cached_and_share_the_transport(make_client: ClientFactory) -> None:
-    client = make_client(lambda _: httpx.Response(200, json=[]))
+    client = make_client(lambda _: httpx2.Response(200, json=[]))
 
     assert client.portfolio is client.portfolio
     assert isinstance(client.portfolio, PortfolioService)

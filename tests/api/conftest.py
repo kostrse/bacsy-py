@@ -7,7 +7,7 @@ from collections.abc import AsyncIterator, Callable
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, cast
 
-import httpx
+import httpx2
 import pytest
 
 from bacsy import ClientConfig
@@ -18,26 +18,26 @@ from bacsy.ratelimit import NoopRateLimiter
 if TYPE_CHECKING:
     from bacsy._json import JsonValue
 
-Responder = Callable[[httpx.Request], httpx.Response]
+Responder = Callable[[httpx2.Request], httpx2.Response]
 
 
 @dataclass
 class Recorder:
     """Scripts responses and records the requests a service sends."""
 
-    requests: list[httpx.Request] = field(default_factory=list)
-    responses: list[httpx.Response | Responder] = field(default_factory=list)
+    requests: list[httpx2.Request] = field(default_factory=list)
+    responses: list[httpx2.Response | Responder] = field(default_factory=list)
 
     def reply(self, payload: object, status: int = 200) -> None:
         """Queue a JSON response (``payload`` is serialised unless it is already a string)."""
         text = payload if isinstance(payload, str) else json.dumps(payload)
-        self.responses.append(httpx.Response(status, text=text))
+        self.responses.append(httpx2.Response(status, text=text))
 
     def respond(self, responder: Responder) -> None:
         """Queue a callable that builds the response from the request."""
         self.responses.append(responder)
 
-    def handle(self, request: httpx.Request) -> httpx.Response:
+    def handle(self, request: httpx2.Request) -> httpx2.Response:
         self.requests.append(request)
         if not self.responses:
             msg = f"unexpected request {request.method} {request.url}"
@@ -46,7 +46,7 @@ class Recorder:
         return response(request) if callable(response) else response
 
     @property
-    def last(self) -> httpx.Request:
+    def last(self) -> httpx2.Request:
         return self.requests[-1]
 
     def last_json(self) -> JsonValue:
@@ -60,8 +60,8 @@ def recorder() -> Recorder:
 
 @pytest.fixture
 async def transport(recorder: Recorder) -> AsyncIterator[ApiHttpClient]:
-    http = httpx.AsyncClient(
-        transport=httpx.MockTransport(recorder.handle), base_url="https://be.broker.ru"
+    http = httpx2.AsyncClient(
+        transport=httpx2.MockTransport(recorder.handle), base_url="https://be.broker.ru"
     )
     async with http:
         yield ApiHttpClient(

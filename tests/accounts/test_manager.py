@@ -400,15 +400,15 @@ async def test_an_added_token_records_when_it_was_added(tmp_path: Path) -> None:
 
 
 async def test_verify_returns_transport_failures_as_errors(tmp_path: Path) -> None:
-    import httpx
+    import httpx2
 
-    def handler(request: httpx.Request) -> httpx.Response:
-        raise httpx.ConnectError("down", request=request)
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        raise httpx2.ConnectError("down", request=request)
 
     manager = _manager(tmp_path)
     await manager.add_token("main", make_refresh_token(exp=NOW + DAY))
-    async with httpx.AsyncClient(
-        transport=httpx.MockTransport(handler), base_url="https://x"
+    async with httpx2.AsyncClient(
+        transport=httpx2.MockTransport(handler), base_url="https://x"
     ) as http:
         [result] = await manager.verify(http, now=NOW)
 

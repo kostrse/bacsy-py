@@ -36,7 +36,7 @@ uv run pytest
 
 Never disable a rule, add a blanket `# type: ignore`, relax `typeCheckingMode` or filter a
 warning to make a check pass: fix the code, or explain why a targeted, commented suppression
-is right. Runtime dependencies are `httpx`, `pydantic` and `websockets`; add nothing else
+is right. Runtime dependencies are `httpx2`, `pydantic` and `websockets`; add nothing else
 unless asked. When the dependencies in `pyproject.toml` change, run `uv lock` and commit
 `uv.lock` in the same change.
 
@@ -77,7 +77,7 @@ CHANGELOG.md       Keep a Changelog; user-visible changes are recorded under [Un
 - **Async only.** The public interface is `asyncio`. No blocking I/O in library code, no
   threads, no synchronous mirror.
 - **Strict typing.** `basedpyright` runs strict over `src` and `tests`. Avoid `Any`.
-- **Layers.** `httpx.AsyncClient` -> `ApiHttpClient` -> `TradeApiClient`. The typed client's
+- **Layers.** `httpx2.AsyncClient` -> `ApiHttpClient` -> `TradeApiClient`. The typed client's
   constructor takes only an assembled `ApiHttpClient`; convenience lives in the `from_*`
   factories. Each layer closes only what it created, which is what makes an injected pool
   or `ApiHttpClient` testable. `TradeApiClient` takes no credential arguments and reads no
@@ -99,7 +99,7 @@ reach or talk to the server, including 5xx and unreadable replies), `Configurati
 credentials) and `ApiError` (the server rejected the operation). No class has two catchable
 parents. An error from an HTTP response carries it as `response`; `transient` says whether
 retrying may help. Map new statuses and API error types in `error_for_status` rather than
-letting `httpx` exceptions escape. A local pre-check raises the class the server's own
+letting `httpx2` exceptions escape. A local pre-check raises the class the server's own
 answer would map to. A bad argument to a library call (a page size, a depth, an account
 name) raises `ValueError`, like the standard library; anything derived from a token, a
 file, the environment or the network raises a `BacsyError`.
@@ -211,7 +211,7 @@ saves, removes, prunes and verifies them.
 
 - `asyncio_mode = "auto"`, so `async def test_*` needs no decorator. Warnings are errors;
   fix the cause rather than adding a filter.
-- Tests never touch the network. Use `httpx.MockTransport` through the `make_client`
+- Tests never touch the network. Use `httpx2.MockTransport` through the `make_client`
   fixture in `tests/conftest.py` or the recording transport in `tests/api/conftest.py`, and
   the WebSocket doubles in `tests/ws/fakes.py`. Build clients with `make_client` or a
   `from_*` factory given an injected `http=` pool.

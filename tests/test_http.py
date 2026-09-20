@@ -5,7 +5,7 @@ from __future__ import annotations
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
-import httpx
+import httpx2
 import pytest
 
 from bacsy import DEFAULT_USER_AGENT, ClientConfig, RetryPolicy, new_http_pool
@@ -77,15 +77,15 @@ class RecordingLimiter:
 
 
 def _transport(
-    handler: Callable[[httpx.Request], httpx.Response],
+    handler: Callable[[httpx2.Request], httpx2.Response],
     fake_clock: FakeClock,
     *,
     provider: RotatingProvider | StaticAccessTokenProvider | None = None,
     limiter: RecordingLimiter | None = None,
     retry: RetryPolicy | None = None,
-) -> tuple[ApiHttpClient, httpx.AsyncClient]:
-    http = httpx.AsyncClient(
-        transport=httpx.MockTransport(handler), base_url="https://be.broker.ru"
+) -> tuple[ApiHttpClient, httpx2.AsyncClient]:
+    http = httpx2.AsyncClient(
+        transport=httpx2.MockTransport(handler), base_url="https://be.broker.ru"
     )
     transport = ApiHttpClient(
         provider or StaticAccessTokenProvider("t1"),
@@ -99,11 +99,11 @@ def _transport(
 
 
 async def test_call_sends_body_and_decodes_decimals(fake_clock: FakeClock) -> None:
-    seen: list[httpx.Request] = []
+    seen: list[httpx2.Request] = []
 
-    def handler(request: httpx.Request) -> httpx.Response:
+    def handler(request: httpx2.Request) -> httpx2.Response:
         seen.append(request)
-        return httpx.Response(200, text='{"price": 10.10}')
+        return httpx2.Response(200, text='{"price": 10.10}')
 
     transport, http = _transport(handler, fake_clock)
     async with http:
@@ -117,11 +117,11 @@ async def test_call_sends_body_and_decodes_decimals(fake_clock: FakeClock) -> No
 
 
 async def test_request_sends_decimals_as_numbers_and_decodes_them(fake_clock: FakeClock) -> None:
-    seen: list[httpx.Request] = []
+    seen: list[httpx2.Request] = []
 
-    def handler(request: httpx.Request) -> httpx.Response:
+    def handler(request: httpx2.Request) -> httpx2.Response:
         seen.append(request)
-        return httpx.Response(200, text='{"price": 10.10}')
+        return httpx2.Response(200, text='{"price": 10.10}')
 
     transport, http = _transport(handler, fake_clock)
     async with http:
@@ -140,7 +140,7 @@ async def test_request_sends_decimals_as_numbers_and_decodes_them(fake_clock: Fa
 
 
 async def test_request_rejects_a_body_it_cannot_encode(fake_clock: FakeClock) -> None:
-    transport, http = _transport(lambda _: httpx.Response(200), fake_clock)
+    transport, http = _transport(lambda _: httpx2.Response(200), fake_clock)
     async with http:
         with pytest.raises(TypeError, match="not JSON serializable"):
             await transport.request(
@@ -149,13 +149,13 @@ async def test_request_rejects_a_body_it_cannot_encode(fake_clock: FakeClock) ->
 
 
 async def test_request_returns_none_for_empty_body(fake_clock: FakeClock) -> None:
-    transport, http = _transport(lambda _: httpx.Response(200), fake_clock)
+    transport, http = _transport(lambda _: httpx2.Response(200), fake_clock)
     async with http:
         assert await transport.request("GET", "/trade-api-bff-limit/api/v1/limits") is None
 
 
 async def test_request_rejects_non_json_success(fake_clock: FakeClock) -> None:
-    transport, http = _transport(lambda _: httpx.Response(200, text="<html>"), fake_clock)
+    transport, http = _transport(lambda _: httpx2.Response(200, text="<html>"), fake_clock)
     async with http:
         with pytest.raises(ProtocolError) as info:
             await transport.request("GET", "/trade-api-bff-limit/api/v1/limits")
@@ -165,13 +165,13 @@ async def test_request_rejects_non_json_success(fake_clock: FakeClock) -> None:
 
 
 async def test_call_returns_none_for_empty_body(fake_clock: FakeClock) -> None:
-    transport, http = _transport(lambda _: httpx.Response(200), fake_clock)
+    transport, http = _transport(lambda _: httpx2.Response(200), fake_clock)
     async with http:
         assert await transport.call(READ) is None
 
 
 async def test_call_rejects_non_json_success(fake_clock: FakeClock) -> None:
-    transport, http = _transport(lambda _: httpx.Response(200, text="<html>"), fake_clock)
+    transport, http = _transport(lambda _: httpx2.Response(200, text="<html>"), fake_clock)
     async with http:
         with pytest.raises(ProtocolError, match="non-JSON") as info:
             await transport.call(READ)
@@ -182,10 +182,10 @@ async def test_call_rejects_non_json_success(fake_clock: FakeClock) -> None:
 async def test_401_refreshes_once_and_resends(fake_clock: FakeClock) -> None:
     seen: list[str] = []
 
-    def handler(request: httpx.Request) -> httpx.Response:
+    def handler(request: httpx2.Request) -> httpx2.Response:
         token = request.headers["Authorization"]
         seen.append(token)
-        return httpx.Response(401 if token == "Bearer t1" else 200, json={})
+        return httpx2.Response(401 if token == "Bearer t1" else 200, json={})
 
     provider = RotatingProvider()
     transport, http = _transport(handler, fake_clock, provider=provider)
@@ -201,7 +201,7 @@ async def test_401_refreshes_once_and_resends(fake_clock: FakeClock) -> None:
 async def test_write_operations_request_a_write_token(fake_clock: FakeClock) -> None:
     provider = RotatingProvider()
     transport, http = _transport(
-        lambda _: httpx.Response(200, json={}), fake_clock, provider=provider
+        lambda _: httpx2.Response(200, json={}), fake_clock, provider=provider
     )
     async with http:
         await transport.call(WRITE, body=Body(order_quantity=1, client_order_id="c"))
@@ -213,10 +213,10 @@ async def test_write_operations_request_a_write_token(fake_clock: FakeClock) -> 
 async def test_second_401_raises(fake_clock: FakeClock) -> None:
     calls = 0
 
-    def handler(request: httpx.Request) -> httpx.Response:
+    def handler(request: httpx2.Request) -> httpx2.Response:
         nonlocal calls
         calls += 1
-        return httpx.Response(401, json={"type": "UNAUTHORIZED"})
+        return httpx2.Response(401, json={"type": "UNAUTHORIZED"})
 
     transport, http = _transport(handler, fake_clock, provider=RotatingProvider())
     async with http:
@@ -230,10 +230,10 @@ async def test_second_401_raises(fake_clock: FakeClock) -> None:
 async def test_static_token_401_is_not_resent(fake_clock: FakeClock) -> None:
     calls = 0
 
-    def handler(request: httpx.Request) -> httpx.Response:
+    def handler(request: httpx2.Request) -> httpx2.Response:
         nonlocal calls
         calls += 1
-        return httpx.Response(401)
+        return httpx2.Response(401)
 
     transport, http = _transport(handler, fake_clock)
     async with http:
@@ -244,7 +244,7 @@ async def test_static_token_401_is_not_resent(fake_clock: FakeClock) -> None:
 
 
 async def test_idempotent_read_retries_server_errors(fake_clock: FakeClock) -> None:
-    responses = [httpx.Response(503), httpx.Response(502), httpx.Response(200, json={"ok": 1})]
+    responses = [httpx2.Response(503), httpx2.Response(502), httpx2.Response(200, json={"ok": 1})]
 
     transport, http = _transport(lambda _: responses.pop(0), fake_clock)
     async with http:
@@ -256,10 +256,10 @@ async def test_idempotent_read_retries_server_errors(fake_clock: FakeClock) -> N
 async def test_read_gives_up_after_max_attempts(fake_clock: FakeClock) -> None:
     calls = 0
 
-    def handler(request: httpx.Request) -> httpx.Response:
+    def handler(request: httpx2.Request) -> httpx2.Response:
         nonlocal calls
         calls += 1
-        raise httpx.ReadTimeout("slow", request=request)
+        raise httpx2.ReadTimeout("slow", request=request)
 
     transport, http = _transport(handler, fake_clock)
     async with http:
@@ -274,10 +274,10 @@ async def test_write_is_never_retried_on_server_or_transport_errors(
 ) -> None:
     calls = 0
 
-    def handler(request: httpx.Request) -> httpx.Response:
+    def handler(request: httpx2.Request) -> httpx2.Response:
         nonlocal calls
         calls += 1
-        return httpx.Response(500)
+        return httpx2.Response(500)
 
     transport, http = _transport(handler, fake_clock)
     async with http:
@@ -289,7 +289,7 @@ async def test_write_is_never_retried_on_server_or_transport_errors(
 
 
 async def test_429_retries_writes_and_penalizes_the_service(fake_clock: FakeClock) -> None:
-    responses = [httpx.Response(429), httpx.Response(200, json={"status": "OK"})]
+    responses = [httpx2.Response(429), httpx2.Response(200, json={"status": "OK"})]
     limiter = RecordingLimiter()
 
     transport, http = _transport(lambda _: responses.pop(0), fake_clock, limiter=limiter)
@@ -305,7 +305,7 @@ async def test_429_retries_writes_and_penalizes_the_service(fake_clock: FakeCloc
 
 async def test_429_with_writes_opted_out(fake_clock: FakeClock) -> None:
     transport, http = _transport(
-        lambda _: httpx.Response(429), fake_clock, retry=RetryPolicy(retry_writes_on_429=False)
+        lambda _: httpx2.Response(429), fake_clock, retry=RetryPolicy(retry_writes_on_429=False)
     )
     async with http:
         with pytest.raises(RateLimitError):
@@ -317,14 +317,14 @@ async def test_new_http_pool_carries_config() -> None:
 
     async with new_http_pool(config) as pool:
         assert str(pool.base_url) == config.rest_base_url
-        assert pool.timeout == httpx.Timeout(5.0)
+        assert pool.timeout == httpx2.Timeout(5.0)
         assert pool.headers["User-Agent"] == "bacsy-tests/1.0"
 
 
 async def test_created_pool_sends_library_user_agent(monkeypatch: pytest.MonkeyPatch) -> None:
-    pools: list[httpx.AsyncClient] = []
+    pools: list[httpx2.AsyncClient] = []
 
-    def spy(config: ClientConfig) -> httpx.AsyncClient:
+    def spy(config: ClientConfig) -> httpx2.AsyncClient:
         pools.append(new_http_pool(config))
         return pools[-1]
 

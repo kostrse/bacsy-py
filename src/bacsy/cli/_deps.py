@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from datetime import tzinfo
     from typing import TextIO
 
-    import httpx
+    import httpx2
 
 
 def _default_confirm(prompt: str) -> bool:
@@ -34,7 +34,7 @@ def _default_confirm(prompt: str) -> bool:
     return sys.stdin.readline().strip().lower() in {"y", "yes"}
 
 
-def _default_http_client() -> httpx.AsyncClient:
+def _default_http_client() -> httpx2.AsyncClient:
     return new_http_pool(ClientConfig())
 
 
@@ -57,7 +57,7 @@ class CliDeps:
     stderr: TextIO | None = None
     environ: Mapping[str, str] | None = None
     """Environment `NO_COLOR`, `FORCE_COLOR` and the terminal variables are read from."""
-    http_client_factory: Callable[[], httpx.AsyncClient] = _default_http_client
+    http_client_factory: Callable[[], httpx2.AsyncClient] = _default_http_client
 
     def read_stdin(self) -> str:
         stream = sys.stdin if self.stdin is None else self.stdin
