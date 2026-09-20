@@ -9,7 +9,7 @@ license-files = ["LICENSE"]
 authors = [{ name = "Sergey Kostrukov" }]
 keywords = ["bcs", "broker", "trading", "trade-api", "asyncio", "websocket"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Framework :: AsyncIO",
     "Intended Audience :: Developers",
     "Intended Audience :: Financial and Insurance Industry",
@@ -34,16 +34,17 @@ bacsy = "bacsy.cli:main"
 Homepage = "https://github.com/kostrse/bacsy-py"
 Repository = "https://github.com/kostrse/bacsy-py"
 Issues = "https://github.com/kostrse/bacsy-py/issues"
+Changelog = "https://github.com/kostrse/bacsy-py/blob/main/CHANGELOG.md"
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/bacsy"]
 
 [tool.hatch.build.targets.sdist]
-include = ["src", "tests", "README.md", "LICENSE"]
+include = ["src", "tests", "README.md", "CHANGELOG.md", "LICENSE"]
 
 [dependency-groups]
 dev = [
@@ -110,7 +111,7 @@ runtime-evaluated-base-classes = [
 docstring-code-format = true
 
 [tool.basedpyright]
-include = ["src", "tests"]
+include = ["src", "tests", ".github/scripts"]
 pythonVersion = "3.12"
 typeCheckingMode = "strict"
 reportMissingTypeStubs = true

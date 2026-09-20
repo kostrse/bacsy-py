@@ -66,6 +66,9 @@ src/bacsy/
   _json.py, _util/, _version.py   private leaves
 tests/             mirrors the package; scripted doubles in tests/auth/fakes.py,
                    tests/accounts/fakes.py and tests/ws/fakes.py
+.github/           CI and release workflows, Dependabot, the release-notes script
+.agents/skills/    agent skills; .claude/skills is a symlink to it for Claude Code
+CHANGELOG.md       Keep a Changelog; user-visible changes are recorded under [Unreleased]
 ```
 
 ## Architecture
@@ -231,6 +234,33 @@ use.
 Keep `README.md` and this file in step with the code: when a command, path, variable or
 public interface changes, update every place that documents it. Do not reference private
 repositories, working notes or non-public documentation from any file in this repository.
+
+Every user-visible change (public interface, command line, behaviour, dependencies,
+supported Python versions) adds an entry under `## [Unreleased]` in `CHANGELOG.md` in the
+same commit, under Added, Changed, Deprecated, Removed, Fixed or Security. Entries use
+inline links, since a release's notes are that section's body alone.
+
+## Releases
+
+The version is the static `version` in `pyproject.toml`; `uv.lock` records it and
+`bacsy.__version__` reads it from the installed metadata. Releases are plain `0.X.Y`
+versions until 1.0, with no beta or dev suffix, so `main` carries the last released
+version between releases; the first release turns `0.1.0.dev0` into `0.1.0`. A PEP 440
+pre-release such as `0.2.0b1` is allowed for a preview; its tag is `v0.2.0b1` and the
+workflow marks the GitHub Release as a pre-release.
+
+A release is one commit, `Release X.Y.Z`, that sets the version and moves the
+`[Unreleased]` changelog section under `## [X.Y.Z] - YYYY-MM-DD`, plus the annotated tag
+`vX.Y.Z` on that commit. Pushing the tag runs `.github/workflows/release.yml`: it fails if
+the tag and the project version differ, runs the four checks, builds, publishes to PyPI
+through Trusted Publishing (no PyPI token exists anywhere) and only then creates the
+GitHub Release, with the notes that `.github/scripts/release_notes.py` extracts from the
+changelog and the built files attached. A manual dispatch of the same workflow publishes
+the current branch to TestPyPI as a dry run and creates no release.
+
+`.agents/skills/release/SKILL.md` is the procedure an agent follows to prepare a release.
+An agent prepares and commits locally; it never pushes, tags or dispatches a workflow
+without the maintainer's explicit approval in the same conversation.
 
 ## Adding things
 
