@@ -3,10 +3,11 @@
 [![CI](https://github.com/kostrse/bacsy-py/actions/workflows/ci.yml/badge.svg)](https://github.com/kostrse/bacsy-py/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/bacsy.svg)](https://pypi.org/project/bacsy/)
 [![Python](https://img.shields.io/pypi/pyversions/bacsy.svg)](https://pypi.org/project/bacsy/)
+[![License](https://img.shields.io/pypi/l/bacsy.svg)](LICENSE)
 
 Unofficial async Python client for the BCS Trade API, for Python 3.12 and later.
 
-This project is not affiliated with, endorsed by, or supported by BCS. BCS names and marks belong to their respective owners.
+This project is not affiliated with, endorsed by, or supported by BCS (ООО «Компания БКС», BrokerCreditService Ltd., part of BCS Financial Group, operator of the BCS World of Investments brokerage). BCS names and marks belong to their respective owners.
 
 ## Getting started
 
@@ -36,9 +37,17 @@ async with TradeApiClient.from_account("main") as client:
 
 For upstream service rules, see the [official BCS Trade API documentation](https://trade-api.bcs.ru/).
 
+## Status and versioning
+
+The project is pre-1.0 and follows [Semantic Versioning](https://semver.org/): a minor release may still change or remove public interfaces, and every such change is recorded in the [changelog](CHANGELOG.md). The public interface is what `bacsy.__all__` exports and the `bacsy` command. Only the latest release is supported. The supported Python versions are the classifiers on PyPI.
+
 ## Contributing
 
-Please open an issue before starting a large change.
+Contributions are welcome; see the [contributing guide](.github/CONTRIBUTING.md). Please open an issue before starting a large change. AI-assisted changes are accepted when the author has read and understood them and says which tool helped, as the guide describes.
+
+## Security
+
+Report a vulnerability privately as described in the [security policy](.github/SECURITY.md), not in a public issue. The library sends tokens only to the BCS Trade API and collects nothing else.
 
 ## Trading risk
 

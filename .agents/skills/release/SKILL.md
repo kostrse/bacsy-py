@@ -69,7 +69,7 @@ The last command prints the notes the GitHub Release will carry.
 ## 5. Commit
 
 One commit, message `Release X.Y.Z`, containing exactly `pyproject.toml`, `uv.lock` and
-`CHANGELOG.md`. Add the attribution trailer your agent uses, if any.
+`CHANGELOG.md`, with the trailer `Assisted-by: <agent name>`.
 
 ## 6. Hand over and stop
 

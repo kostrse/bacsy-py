@@ -1,0 +1,67 @@
+name: Bug report
+description: Something in bacsy behaves differently from what its documentation says.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please remove every token, agreement id, client code, login, order number and
+        amount before you submit. Replace them with placeholders such as `<token>` or
+        `<agreement>`. A report that contains a credential is deleted, not edited.
+  - type: input
+    id: version
+    attributes:
+      label: bacsy version
+      description: Output of `uvx bacsy --version` or `pip show bacsy`.
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: python
+    attributes:
+      label: Python version and operating system
+      placeholder: "3.13.2 on Ubuntu 24.04"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What did you do?
+      description: The smallest code or command that shows the problem.
+      render: python
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened instead?
+      description: The full error message or traceback, if there is one.
+    validations:
+      required: true
+  - type: textarea
+    id: payload
+    attributes:
+      label: Anonymised request or response
+      description: |
+        Optional. Paste the request the library sent or the raw reply the API returned,
+        if it helps; the upstream documentation may be outdated or incomplete, so
+        the real payload is the most useful evidence. Replace tokens, agreement ids,
+        client codes, logins, order numbers and amounts with placeholders like
+        `<token>` and `<agreement>`.
+      render: json
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I removed every token and account identifier from this report.
+          required: true
+        - label: I searched the existing issues.
+          required: true
+        - label: If an AI tool found this bug, I have said so above and reproduced it myself.

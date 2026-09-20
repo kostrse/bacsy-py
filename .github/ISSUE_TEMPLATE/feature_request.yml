@@ -1,0 +1,43 @@
+name: Feature request
+description: Propose a change to the library or the bacsy script.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        bacsy is a client library only: it implements every current endpoint and stream
+        of the BCS Trade API and nothing above them. Trading strategies and order bots
+        are out of scope. Please remove every token, agreement id, client code, login,
+        order number and amount from any example you paste.
+  - type: textarea
+    id: usecase
+    attributes:
+      label: What do you want to do, and why?
+      description: The task you are trying to accomplish, not the solution.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed interface
+      description: What the call, model or command would look like. Optional.
+      render: python
+  - type: textarea
+    id: payload
+    attributes:
+      label: Anonymised example payload
+      description: |
+        Optional. An example request or reply of the endpoint or stream involved, with
+        identifiers replaced by placeholders like `<token>` and `<agreement>`. The
+        upstream documentation may be outdated or incomplete, so a real payload is the
+        most useful evidence. A link to the upstream documentation is welcome as well.
+      render: json
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I removed every token and account identifier from this request.
+          required: true
+        - label: I searched the existing issues.
+          required: true

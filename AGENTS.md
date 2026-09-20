@@ -66,7 +66,8 @@ src/bacsy/
   _json.py, _util/, _version.py   private leaves
 tests/             mirrors the package; scripted doubles in tests/auth/fakes.py,
                    tests/accounts/fakes.py and tests/ws/fakes.py
-.github/           CI and release workflows, Dependabot and release scripts
+.github/           CI and release workflows, Dependabot, release scripts, contributor
+                   policy, security policy and issue templates
 .agents/skills/    agent skills; .claude/skills is a symlink to it for Claude Code
 CHANGELOG.md       Keep a Changelog; user-visible changes are recorded under [Unreleased]
 ```
@@ -203,6 +204,8 @@ saves, removes, prunes and verifies them.
   Private helpers need one only when their contract is non-obvious.
 - Describe current, verified behaviour. No work history, plans or defensive justification.
 - Loggers are `bacsy` and its children. Never log a token value or an account identifier.
+- A commit you help write carries the trailer `Assisted-by: <agent name>`. Never add
+  `Co-authored-by`, `Signed-off-by` or any other trailer that names an AI as an author.
 
 ## Testing
 
@@ -232,8 +235,11 @@ use.
 ## Documentation
 
 Keep `README.md` and this file in step with the code: when a command, path, variable or
-public interface changes, update every place that documents it. Do not reference private
-repositories, working notes or non-public documentation from any file in this repository.
+public interface changes, update every place that documents it. `.github/CONTRIBUTING.md`
+is the contributor policy, written for people: a change must satisfy it, and when a
+convention in this file changes, its summary there changes in the same commit.
+Do not reference private repositories, working notes or non-public documentation from any
+file in this repository.
 
 Every user-visible change (public interface, command line, behaviour, dependencies,
 supported Python versions) adds an entry under `## [Unreleased]` in `CHANGELOG.md` in the
