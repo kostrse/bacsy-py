@@ -8,6 +8,7 @@ import os
 import stat
 import sys
 import tempfile
+import time
 from pathlib import Path
 from typing import Self
 
@@ -20,6 +21,19 @@ if sys.platform == "win32":
     def _unlock(fd: int) -> None:
         msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
 
+    def _replace(src: Path, dst: Path) -> None:
+        # MoveFileEx is denied while any other handle, such as a reader's or a virus
+        # scanner's, holds the destination open; POSIX rename never is. Wait it out briefly.
+        for attempt in range(10):
+            try:
+                src.replace(dst)
+            except PermissionError:
+                if attempt == 9:
+                    raise
+                time.sleep(0.1)
+            else:
+                return
+
 else:
     import fcntl
 
@@ -28,6 +42,9 @@ else:
 
     def _unlock(fd: int) -> None:
         fcntl.flock(fd, fcntl.LOCK_UN)
+
+    def _replace(src: Path, dst: Path) -> None:
+        src.replace(dst)
 
 
 log = logging.getLogger("bacsy")
@@ -57,7 +74,9 @@ def write_private_text(path: Path, text: str) -> None:
     Creates the destination directory with mode `0o700` if missing; intermediate
     directories use default permissions. The text is written to a uniquely named
     temporary file in the same directory, created with mode `0o600`, which then replaces
-    `path`; the temporary file is removed if writing fails.
+    `path`; the temporary file is removed if writing fails. On Windows the replacement is
+    retried for about a second while another handle holds `path` open, since a reader or
+    a scanner denies it there. The call blocks; run it in a worker thread.
     """
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     fd, name = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
@@ -65,7 +84,7 @@ def write_private_text(path: Path, text: str) -> None:
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as handle:
             handle.write(text)
-        tmp.replace(path)
+        _replace(tmp, path)
     except BaseException:
         tmp.unlink(missing_ok=True)
         raise

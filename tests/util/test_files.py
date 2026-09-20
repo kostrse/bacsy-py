@@ -90,7 +90,7 @@ async def test_file_lock_excludes_another_process(tmp_path: Path) -> None:
             acquired.set()
 
     try:
-        assert await asyncio.wait_for(child.stdout.readline(), 30) == b"locked\n"
+        assert (await asyncio.wait_for(child.stdout.readline(), 30)).rstrip() == b"locked"
         task = asyncio.create_task(take())
         await asyncio.sleep(0.2)
         assert not acquired.is_set()

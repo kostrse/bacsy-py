@@ -78,9 +78,9 @@ def test_a_terminal_also_gets_blank_lines_between_streams() -> None:
 
 def test_box_drawing_needs_a_utf8_stream() -> None:
     assert table_dash(io.StringIO()) == ASCII_RULE
-    utf8 = io.TextIOWrapper(io.BytesIO(), encoding="utf-8")
+    utf8 = io.TextIOWrapper(io.BytesIO(), encoding="utf-8", newline="\n")
     assert table_dash(utf8) == BOX_RULE
-    latin = io.TextIOWrapper(io.BytesIO(), encoding="cp1251")
+    latin = io.TextIOWrapper(io.BytesIO(), encoding="cp1251", newline="\n")
     assert table_dash(latin) == ASCII_RULE
 
     console = Console(utf8, io.StringIO(), color_out=False, color_err=False)

@@ -113,7 +113,7 @@ async def test_os_errors_become_exit_1(run: Runner, broken_accounts_file: Path) 
     assert code == 1
     assert out == ""
     assert err.startswith("error:")
-    assert str(broken_accounts_file) in err
+    assert repr(str(broken_accounts_file)) in err
 
 
 def test_default_deps_are_usable() -> None:
