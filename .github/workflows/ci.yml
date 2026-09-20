@@ -72,8 +72,6 @@ jobs:
 
   test-windows:
     name: Test (Windows, Python 3.12)
-    # Exercises the Windows-only locking and state-directory paths; runs on main, not on PRs.
-    if: github.event_name != 'pull_request'
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7

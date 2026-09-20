@@ -66,7 +66,7 @@ src/bacsy/
   _json.py, _util/, _version.py   private leaves
 tests/             mirrors the package; scripted doubles in tests/auth/fakes.py,
                    tests/accounts/fakes.py and tests/ws/fakes.py
-.github/           CI and release workflows, Dependabot, the release-notes script
+.github/           CI and release workflows, Dependabot and release scripts
 .agents/skills/    agent skills; .claude/skills is a symlink to it for Claude Code
 CHANGELOG.md       Keep a Changelog; user-visible changes are recorded under [Unreleased]
 ```

@@ -1,0 +1,31 @@
+name: Dependabot auto-merge
+
+# Enables GitHub auto-merge on Dependabot pull requests, so they squash-merge once the
+# checks required by the `main` ruleset pass. GitHub Actions updates qualify at any
+# version; Python dependencies only below a major bump. The merge itself is performed by
+# GitHub, not by this workflow; a failing check leaves the PR open.
+
+on: pull_request
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    name: Enable auto-merge
+    if: github.actor == 'dependabot[bot]' && github.repository == 'kostrse/bacsy-py'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read the update metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v3.1.0
+
+      - name: Enable auto-merge
+        if: >-
+          steps.metadata.outputs.package-ecosystem == 'github_actions'
+          || steps.metadata.outputs.update-type != 'version-update:semver-major'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr merge --auto --squash "$PR_URL"
