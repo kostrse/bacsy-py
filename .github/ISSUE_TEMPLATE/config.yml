@@ -1,8 +1,5 @@
 blank_issues_enabled: true
 contact_links:
-  - name: Report a vulnerability
-    url: https://github.com/kostrse/bacsy-py/security/advisories/new
-    about: Report a security problem privately. Please do not open a public issue for it.
   - name: BCS Trade API documentation
     url: https://trade-api.bcs.ru/
     about: The upstream service documentation. Questions about the API itself go to BCS.

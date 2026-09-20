@@ -3,7 +3,7 @@
 [![CI](https://github.com/kostrse/bacsy-py/actions/workflows/ci.yml/badge.svg)](https://github.com/kostrse/bacsy-py/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/bacsy.svg)](https://pypi.org/project/bacsy/)
 [![Python](https://img.shields.io/pypi/pyversions/bacsy.svg)](https://pypi.org/project/bacsy/)
-[![License](https://img.shields.io/pypi/l/bacsy.svg)](LICENSE)
+[![License](https://img.shields.io/pypi/l/bacsy.svg)](https://github.com/kostrse/bacsy-py/blob/main/LICENSE)
 
 Unofficial async Python client for the BCS Trade API, for Python 3.12 and later.
 
@@ -39,15 +39,15 @@ For upstream service rules, see the [official BCS Trade API documentation](https
 
 ## Status and versioning
 
-The project is pre-1.0 and follows [Semantic Versioning](https://semver.org/): a minor release may still change or remove public interfaces, and every such change is recorded in the [changelog](CHANGELOG.md). The public interface is what `bacsy.__all__` exports and the `bacsy` command. Only the latest release is supported. The supported Python versions are the classifiers on PyPI.
+The project is pre-1.0 and follows [Semantic Versioning](https://semver.org/): a minor release may still change or remove public interfaces, and every such change is recorded in the [changelog](https://github.com/kostrse/bacsy-py/blob/main/CHANGELOG.md). The public interface is what `bacsy.__all__` exports and the `bacsy` command. Only the latest release is supported. The supported Python versions are the classifiers on PyPI.
 
 ## Contributing
 
-Contributions are welcome; see the [contributing guide](.github/CONTRIBUTING.md). Please open an issue before starting a large change. AI-assisted changes are accepted when the author has read and understood them and says which tool helped, as the guide describes.
+Contributions are welcome; see the [contributing guide](https://github.com/kostrse/bacsy-py/blob/main/.github/CONTRIBUTING.md). Please open an issue before starting a large change. AI-assisted changes are accepted when the author has read and understood them and says which tool helped, as the guide describes.
 
 ## Security
 
-Report a vulnerability privately as described in the [security policy](.github/SECURITY.md), not in a public issue. The library sends tokens only to the BCS Trade API and collects nothing else.
+Report a vulnerability privately as described in the [security policy](https://github.com/kostrse/bacsy-py/blob/main/.github/SECURITY.md), not in a public issue. The library sends tokens only to the BCS Trade API and collects nothing else.
 
 ## Trading risk
 
@@ -59,4 +59,4 @@ The project does not provide investment advice or guarantee trading outcomes.
 
 ## License
 
-[MIT](LICENSE) © Sergey Kostrukov
+[MIT](https://github.com/kostrse/bacsy-py/blob/main/LICENSE) © Sergey Kostrukov
