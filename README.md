@@ -3,11 +3,23 @@
 [![CI](https://github.com/kostrse/bacsy-py/actions/workflows/ci.yml/badge.svg)](https://github.com/kostrse/bacsy-py/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/bacsy.svg)](https://pypi.org/project/bacsy/)
 [![Python](https://img.shields.io/pypi/pyversions/bacsy.svg)](https://pypi.org/project/bacsy/)
+[![Typed](https://img.shields.io/badge/typing-strict-blue.svg)](https://github.com/kostrse/bacsy-py/blob/main/pyproject.toml)
 [![License](https://img.shields.io/pypi/l/bacsy.svg)](https://github.com/kostrse/bacsy-py/blob/main/LICENSE)
 
-Unofficial async Python client for the BCS Trade API, for Python 3.12 and later.
+**An unofficial async Python client for the BCS Trade API.**
 
-This project is not affiliated with, endorsed by, or supported by BCS (ООО «Компания БКС», BrokerCreditService Ltd., part of BCS Financial Group, operator of the BCS World of Investments brokerage). BCS names and marks belong to their respective owners.
+Typed access to portfolio, orders, instruments and market data over REST, live quotes and
+order events over WebSocket, and a small command line that keeps your API tokens in order.
+Built on `asyncio`, `httpx`, `pydantic` and `websockets`; nothing else.
+
+<img
+  src="https://raw.githubusercontent.com/kostrse/bacsy-py/main/.github/images/banner.webp"
+  alt="Retro-futurist trading robots operating a cybernetics market terminal"
+  width="100%">
+
+> This project is not affiliated with, endorsed by, or supported by BCS (ООО «Компания БКС»,
+> BrokerCreditService Ltd., part of BCS Financial Group, operator of the BCS World of
+> Investments brokerage). BCS names and marks belong to their respective owners.
 
 ## Getting started
 
