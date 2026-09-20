@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from pathlib import Path
 
-    import httpx
+    import httpx2
 
     from bacsy.auth.protocols import AccessTokenCache
 
@@ -284,7 +284,7 @@ class AccountManager:
 
     async def verify(
         self,
-        http: httpx.AsyncClient,
+        http: httpx2.AsyncClient,
         *,
         account_name: str | None = None,
         now: float | None = None,
@@ -319,7 +319,7 @@ class AccountManager:
 
     async def _verify_one(
         self,
-        http: httpx.AsyncClient,
+        http: httpx2.AsyncClient,
         account: Account,
         token: RefreshToken,
         now: float,
@@ -344,7 +344,7 @@ class AccountManager:
         self,
         account_name: str,
         *,
-        http: httpx.AsyncClient,
+        http: httpx2.AsyncClient,
         cache: AccessTokenCache | None = None,
         config: ClientConfig | None = None,
     ) -> RefreshingAccessTokenProvider:

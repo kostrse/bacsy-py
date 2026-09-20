@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import httpx
+import httpx2
 import pytest
 
 from bacsy.exceptions import (
@@ -182,7 +182,7 @@ def test_unknown_error_type_is_kept() -> None:
 def test_error_for_response_refines_by_type(
     status_code: int, error_type: str, expected: type[BacsyError]
 ) -> None:
-    response = httpx.Response(status_code, json={"type": error_type, "traceId": "t-1"})
+    response = httpx2.Response(status_code, json={"type": error_type, "traceId": "t-1"})
 
     error = error_for_response(response, message="boom")
 
@@ -195,7 +195,7 @@ def test_error_for_response_refines_by_type(
 
 
 def test_display_text_is_exposed_and_shown() -> None:
-    response = httpx.Response(
+    response = httpx2.Response(
         404,
         json={
             "type": "NOT_FOUND",
@@ -218,7 +218,7 @@ def test_display_text_is_absent_when_not_a_string(display_options: object) -> No
     if display_options is not None:
         body["displayOptions"] = display_options
 
-    error = error_for_response(httpx.Response(404, json=body), message="boom")
+    error = error_for_response(httpx2.Response(404, json=body), message="boom")
 
     assert isinstance(error, NotFoundError)
     assert error.response is not None
@@ -227,7 +227,7 @@ def test_display_text_is_absent_when_not_a_string(display_options: object) -> No
 
 
 def test_error_for_response_without_parsable_body() -> None:
-    error = error_for_response(httpx.Response(503, text="<html>"), message="boom")
+    error = error_for_response(httpx2.Response(503, text="<html>"), message="boom")
 
     assert type(error) is ServerError
     assert error.response.body == "<html>"

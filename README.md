@@ -10,7 +10,7 @@
 
 Typed access to portfolio, orders, instruments and market data over REST, live quotes and
 order events over WebSocket, and a small command line that keeps your API tokens in order.
-Built on `asyncio`, `httpx`, `pydantic` and `websockets`; nothing else.
+Built on `asyncio`, `httpx2`, `pydantic` and `websockets`; nothing else.
 
 <img
   src="https://raw.githubusercontent.com/kostrse/bacsy-py/main/.github/images/banner.webp"

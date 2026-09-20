@@ -1,6 +1,6 @@
 """The API HTTP client: bearer authentication, rate limits, retries and JSON decoding.
 
-`ApiHttpClient` sits between an `httpx.AsyncClient` and the typed services. An
+`ApiHttpClient` sits between an `httpx2.AsyncClient` and the typed services. An
 `Operation` determines the service to pace, whether a retry is safe, and the token scope
 to present: `call` takes one from the caller, `request` classifies one from the path,
 and a path with an unknown service prefix has none.
@@ -14,7 +14,7 @@ import random
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, Self
 
-import httpx
+import httpx2
 
 from bacsy._json import dumps_json, dumps_request, loads_decimal
 from bacsy.auth.tokens import TokenScope
@@ -48,14 +48,14 @@ type QueryParams = Mapping[str, QueryValue | list[QueryValue]]
 """Query string parameters. A list value repeats its key once per item."""
 
 
-def new_http_pool(config: ClientConfig) -> httpx.AsyncClient:
+def new_http_pool(config: ClientConfig) -> httpx2.AsyncClient:
     """Return a connection pool with the REST base URL, timeout and `User-Agent` from `config`.
 
     This is the pool the library creates when none is injected.
     """
-    return httpx.AsyncClient(
+    return httpx2.AsyncClient(
         base_url=config.rest_base_url,
-        timeout=httpx.Timeout(config.timeout_seconds),
+        timeout=httpx2.Timeout(config.timeout_seconds),
         headers={"User-Agent": config.user_agent},
     )
 
@@ -90,7 +90,7 @@ class ApiHttpClient:
         self,
         token_provider: AccessTokenProvider,
         *,
-        http: httpx.AsyncClient | None = None,
+        http: httpx2.AsyncClient | None = None,
         config: ClientConfig | None = None,
         rate_limiter: RateLimiter | None = None,
         sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
@@ -98,7 +98,7 @@ class ApiHttpClient:
     ) -> None:
         self._config: ClientConfig = config or ClientConfig()
         self._owns_http: bool = http is None
-        self._http: httpx.AsyncClient = http or new_http_pool(self._config)
+        self._http: httpx2.AsyncClient = http or new_http_pool(self._config)
         self._provider: AccessTokenProvider = token_provider
         self._limiter: RateLimiter = rate_limiter or ServiceRateLimiter(self._config.rate_limit)
         self._sleep: Callable[[float], Awaitable[None]] = sleep
@@ -132,7 +132,7 @@ class ApiHttpClient:
         content: bytes | None,
         headers: Mapping[str, str] | None,
         scope: TokenScope,
-    ) -> httpx.Response:
+    ) -> httpx2.Response:
         token = await self._provider.get(scope)
         response = await self._http.request(
             method, url, params=params, content=content, headers=self._headers(token, headers)
@@ -157,7 +157,7 @@ class ApiHttpClient:
         params: QueryParams | None,
         content: bytes | None,
         headers: Mapping[str, str] | None,
-    ) -> httpx.Response:
+    ) -> httpx2.Response:
         """Send a request, pacing and retrying per `operation`, and return a successful response.
 
         `None` for `operation` means an unknown service: no pacing, no retries, and a
@@ -177,7 +177,7 @@ class ApiHttpClient:
                 response = await self._send_once(
                     method, url, params=params, content=content, headers=headers, scope=scope
                 )
-            except httpx.HTTPError as exc:
+            except httpx2.HTTPError as exc:
                 error = TransportError(f"{label} failed: {exc}")
                 error.__cause__ = exc
             else:
@@ -202,7 +202,7 @@ class ApiHttpClient:
             await self._sleep(decision.delay)
 
     @staticmethod
-    def _decode(response: httpx.Response, *, source: str) -> JsonValue:
+    def _decode(response: httpx2.Response, *, source: str) -> JsonValue:
         if not response.content:
             return None
         try:

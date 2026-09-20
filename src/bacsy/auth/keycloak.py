@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 from typing import TYPE_CHECKING, cast
 
-import httpx
+import httpx2
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from bacsy.auth.tokens import AccessToken
@@ -70,7 +70,7 @@ def classify_refresh_error(
     return _DESCRIPTIONS.get(description.strip(), TokenRefreshReason.UNKNOWN)
 
 
-def _refresh_error(response: httpx.Response) -> TokenRefreshError:
+def _refresh_error(response: httpx2.Response) -> TokenRefreshError:
     attached = ErrorResponse(status_code=response.status_code, body=response.text)
     try:
         body = _ErrorBody.model_validate(response.json())
@@ -89,7 +89,7 @@ def _refresh_error(response: httpx.Response) -> TokenRefreshError:
 
 
 async def exchange_refresh_token(
-    http: httpx.AsyncClient,
+    http: httpx2.AsyncClient,
     *,
     token_path: str,
     scope: TokenScope,
@@ -114,7 +114,7 @@ async def exchange_refresh_token(
     form = {"client_id": scope.value, "grant_type": "refresh_token", "refresh_token": refresh_token}
     try:
         response = await http.post(token_path, data=form, headers={"Accept": "application/json"})
-    except httpx.HTTPError as exc:
+    except httpx2.HTTPError as exc:
         raise TransportError(f"token refresh failed: {exc}") from exc
 
     if response.status_code == 400:

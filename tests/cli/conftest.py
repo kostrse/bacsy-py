@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from datetime import UTC
 from typing import TYPE_CHECKING, Protocol, cast, override
 
-import httpx
+import httpx2
 import pytest
 
 from bacsy.accounts import AccountManager
@@ -135,8 +135,8 @@ def deps(clock: Clock, prompts: Prompts, keycloak: Keycloak) -> CliDeps:
         confirm=prompts.confirm,
         stdin=io.StringIO(),
         environ={},
-        http_client_factory=lambda: httpx.AsyncClient(
-            transport=httpx.MockTransport(keycloak.async_handler), base_url="https://be.broker.ru"
+        http_client_factory=lambda: httpx2.AsyncClient(
+            transport=httpx2.MockTransport(keycloak.async_handler), base_url="https://be.broker.ru"
         ),
     )
 

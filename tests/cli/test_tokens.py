@@ -8,7 +8,7 @@ import sys
 from dataclasses import replace
 from typing import TYPE_CHECKING, cast
 
-import httpx
+import httpx2
 import pytest
 
 from bacsy.accounts import AccountManager
@@ -515,11 +515,11 @@ async def test_verify_single_account_and_json(
 async def test_verify_network_failure_exits_1(
     seeded: dict[str, str], deps: CliDeps, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    def handler(request: httpx.Request) -> httpx.Response:
-        raise httpx.ConnectError("down", request=request)
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        raise httpx2.ConnectError("down", request=request)
 
-    def factory() -> httpx.AsyncClient:
-        return httpx.AsyncClient(transport=httpx.MockTransport(handler), base_url="https://x")
+    def factory() -> httpx2.AsyncClient:
+        return httpx2.AsyncClient(transport=httpx2.MockTransport(handler), base_url="https://x")
 
     failing = replace(deps, http_client_factory=factory)
     code = await run_command(["tokens", "verify", "spare"], deps=failing)

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import httpx
+import httpx2
 import pytest
 
 from bacsy import (
@@ -16,21 +16,21 @@ from bacsy.auth import TokenScope, classify_refresh_error, exchange_refresh_toke
 from bacsy.exceptions import TokenRefreshReason
 
 
-def _client(handler: httpx.MockTransport | httpx.Response) -> httpx.AsyncClient:
+def _client(handler: httpx2.MockTransport | httpx2.Response) -> httpx2.AsyncClient:
     transport = (
         handler
-        if isinstance(handler, httpx.MockTransport)
-        else httpx.MockTransport(lambda _: handler)
+        if isinstance(handler, httpx2.MockTransport)
+        else httpx2.MockTransport(lambda _: handler)
     )
-    return httpx.AsyncClient(transport=transport, base_url="https://be.broker.ru")
+    return httpx2.AsyncClient(transport=transport, base_url="https://be.broker.ru")
 
 
 async def test_successful_exchange() -> None:
-    seen: list[httpx.Request] = []
+    seen: list[httpx2.Request] = []
 
-    def handler(request: httpx.Request) -> httpx.Response:
+    def handler(request: httpx2.Request) -> httpx2.Response:
         seen.append(request)
-        return httpx.Response(
+        return httpx2.Response(
             200,
             json={
                 "access_token": "acc",
@@ -42,7 +42,7 @@ async def test_successful_exchange() -> None:
             },
         )
 
-    async with _client(httpx.MockTransport(handler)) as http:
+    async with _client(httpx2.MockTransport(handler)) as http:
         tokens = await exchange_refresh_token(
             http,
             token_path=TOKEN_ENDPOINT_PATH,
@@ -61,7 +61,7 @@ async def test_successful_exchange() -> None:
 
 
 async def test_response_without_rotated_refresh_token() -> None:
-    response = httpx.Response(200, json={"access_token": "acc", "expires_in": 100})
+    response = httpx2.Response(200, json={"access_token": "acc", "expires_in": 100})
     async with _client(response) as http:
         tokens = await exchange_refresh_token(
             http,
@@ -101,7 +101,7 @@ def test_classify_refresh_error(
 
 
 async def test_invalid_grant() -> None:
-    response = httpx.Response(
+    response = httpx2.Response(
         400, json={"error": "invalid_grant", "error_description": "Token is not active"}
     )
     async with _client(response) as http:
@@ -121,7 +121,7 @@ async def test_invalid_grant() -> None:
 
 
 async def test_unparsable_400() -> None:
-    async with _client(httpx.Response(400, text="<html>")) as http:
+    async with _client(httpx2.Response(400, text="<html>")) as http:
         with pytest.raises(TokenRefreshError, match="HTTP 400") as info:
             await exchange_refresh_token(
                 http,
@@ -135,7 +135,7 @@ async def test_unparsable_400() -> None:
 
 
 async def test_other_errors_map_to_api_errors() -> None:
-    async with _client(httpx.Response(503, text="down")) as http:
+    async with _client(httpx2.Response(503, text="down")) as http:
         with pytest.raises(ServerError):
             await exchange_refresh_token(
                 http,
@@ -147,7 +147,7 @@ async def test_other_errors_map_to_api_errors() -> None:
 
 
 async def test_unexpected_success_body() -> None:
-    async with _client(httpx.Response(200, json={"hello": 1})) as http:
+    async with _client(httpx2.Response(200, json={"hello": 1})) as http:
         with pytest.raises(ProtocolError, match="unexpected body") as info:
             await exchange_refresh_token(
                 http,
@@ -162,7 +162,7 @@ async def test_unexpected_success_body() -> None:
 
 
 async def test_non_json_success_body() -> None:
-    async with _client(httpx.Response(200, text="<html>")) as http:
+    async with _client(httpx2.Response(200, text="<html>")) as http:
         with pytest.raises(ProtocolError, match="non-JSON") as info:
             await exchange_refresh_token(
                 http,
@@ -176,10 +176,10 @@ async def test_non_json_success_body() -> None:
 
 
 async def test_transport_error() -> None:
-    def handler(request: httpx.Request) -> httpx.Response:
-        raise httpx.ConnectError("nope", request=request)
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        raise httpx2.ConnectError("nope", request=request)
 
-    async with _client(httpx.MockTransport(handler)) as http:
+    async with _client(httpx2.MockTransport(handler)) as http:
         with pytest.raises(TransportError):
             await exchange_refresh_token(
                 http,

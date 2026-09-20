@@ -6,7 +6,7 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import httpx
+import httpx2
 import pytest
 
 import bacsy
@@ -47,13 +47,13 @@ def _refresh_token(scope: TokenScope = TokenScope.READ, *, sid: str) -> str:
     return make_refresh_token(scope=scope, exp=FAR + 30 * DAY, sid=sid)
 
 
-def _ok(request: httpx.Request) -> httpx.Response:
-    return httpx.Response(200, json={"ok": True})
+def _ok(request: httpx2.Request) -> httpx2.Response:
+    return httpx2.Response(200, json={"ok": True})
 
 
-def _token_response(request: httpx.Request) -> httpx.Response:
+def _token_response(request: httpx2.Request) -> httpx2.Response:
     client_id = dict(pair.split("=") for pair in request.read().decode().split("&"))["client_id"]
-    return httpx.Response(
+    return httpx2.Response(
         200,
         json={
             "access_token": f"minted-{client_id.removeprefix('trade-api-')}",
@@ -65,22 +65,22 @@ def _token_response(request: httpx.Request) -> httpx.Response:
     )
 
 
-def _recording_handler(seen: list[httpx.Request]) -> Callable[[httpx.Request], httpx.Response]:
-    def handler(request: httpx.Request) -> httpx.Response:
+def _recording_handler(seen: list[httpx2.Request]) -> Callable[[httpx2.Request], httpx2.Response]:
+    def handler(request: httpx2.Request) -> httpx2.Response:
         seen.append(request)
         if request.url.path.startswith("/trade-api-keycloak/"):
             return _token_response(request)
-        return httpx.Response(200, json={})
+        return httpx2.Response(200, json={})
 
     return handler
 
 
 async def test_sends_bearer_token_and_accept_header(make_client: ClientFactory) -> None:
-    seen: list[httpx.Request] = []
+    seen: list[httpx2.Request] = []
 
-    def handler(request: httpx.Request) -> httpx.Response:
+    def handler(request: httpx2.Request) -> httpx2.Response:
         seen.append(request)
-        return httpx.Response(200, json={"ok": True})
+        return httpx2.Response(200, json={"ok": True})
 
     client = make_client(handler)
     payload = await client.http.request("GET", PORTFOLIO)
@@ -92,11 +92,11 @@ async def test_sends_bearer_token_and_accept_header(make_client: ClientFactory) 
 
 
 async def test_passes_query_parameters_and_json_body(make_client: ClientFactory) -> None:
-    seen: list[httpx.Request] = []
+    seen: list[httpx2.Request] = []
 
-    def handler(request: httpx.Request) -> httpx.Response:
+    def handler(request: httpx2.Request) -> httpx2.Response:
         seen.append(request)
-        return httpx.Response(200, json={})
+        return httpx2.Response(200, json={})
 
     client = make_client(handler)
     await client.http.request(
@@ -112,11 +112,11 @@ async def test_passes_query_parameters_and_json_body(make_client: ClientFactory)
 
 
 async def test_custom_headers_override_defaults(make_client: ClientFactory) -> None:
-    seen: list[httpx.Request] = []
+    seen: list[httpx2.Request] = []
 
-    def handler(request: httpx.Request) -> httpx.Response:
+    def handler(request: httpx2.Request) -> httpx2.Response:
         seen.append(request)
-        return httpx.Response(200, json={})
+        return httpx2.Response(200, json={})
 
     client = make_client(handler)
     await client.http.request("GET", LIMITS, headers={"Accept": "application/json; version=2"})
@@ -124,10 +124,10 @@ async def test_custom_headers_override_defaults(make_client: ClientFactory) -> N
     assert seen[0].headers["Accept"] == "application/json; version=2"
 
 
-def _spy_created_pools(monkeypatch: pytest.MonkeyPatch) -> list[httpx.AsyncClient]:
-    pools: list[httpx.AsyncClient] = []
+def _spy_created_pools(monkeypatch: pytest.MonkeyPatch) -> list[httpx2.AsyncClient]:
+    pools: list[httpx2.AsyncClient] = []
 
-    def spy(config: ClientConfig) -> httpx.AsyncClient:
+    def spy(config: ClientConfig) -> httpx2.AsyncClient:
         pools.append(new_http_pool(config))
         return pools[-1]
 
@@ -150,15 +150,15 @@ async def test_factory_pool_sends_configured_user_agent(monkeypatch: pytest.Monk
 
 
 async def test_injected_pool_keeps_its_own_user_agent() -> None:
-    seen: list[httpx.Request] = []
+    seen: list[httpx2.Request] = []
 
-    def handler(request: httpx.Request) -> httpx.Response:
+    def handler(request: httpx2.Request) -> httpx2.Response:
         seen.append(request)
-        return httpx.Response(200, json={})
+        return httpx2.Response(200, json={})
 
     config = ClientConfig(user_agent="ignored/9")
-    async with httpx.AsyncClient(
-        transport=httpx.MockTransport(handler),
+    async with httpx2.AsyncClient(
+        transport=httpx2.MockTransport(handler),
         base_url=config.rest_base_url,
         headers={"User-Agent": "custom/1"},
     ) as pool:
@@ -177,7 +177,7 @@ async def test_error_responses_raise(
     make_client: ClientFactory, status_code: int, expected: type[Exception]
 ) -> None:
     config = ClientConfig(retry=RetryPolicy(max_attempts=1))
-    client = make_client(lambda _: httpx.Response(status_code, text="nope"), config=config)
+    client = make_client(lambda _: httpx2.Response(status_code, text="nope"), config=config)
 
     with pytest.raises(expected) as exc_info:
         await client.http.request("GET", PORTFOLIO)
@@ -188,8 +188,8 @@ async def test_error_responses_raise(
 
 
 async def test_transport_failures_are_wrapped(make_client: ClientFactory) -> None:
-    def handler(request: httpx.Request) -> httpx.Response:
-        raise httpx.ConnectTimeout("timed out", request=request)
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        raise httpx2.ConnectTimeout("timed out", request=request)
 
     client = make_client(handler, config=ClientConfig(retry=RetryPolicy(max_attempts=1)))
 
@@ -218,7 +218,7 @@ async def test_factory_closes_the_pool_it_created() -> None:
 
 
 async def test_factory_leaves_an_injected_pool_open() -> None:
-    seen: list[httpx.Request] = []
+    seen: list[httpx2.Request] = []
     pool = _pool(seen)
 
     async with TradeApiClient.from_access_token("t", http=pool, config=NO_PACING) as client:
@@ -252,7 +252,7 @@ async def test_missing_account_raises_configuration_error() -> None:
 
 
 async def test_from_account_reads_the_accounts_file(tmp_path: Path) -> None:
-    seen: list[httpx.Request] = []
+    seen: list[httpx2.Request] = []
     manager = AccountManager.from_file(tmp_path / "accounts.json")
     await manager.add_token("acct", _refresh_token(TokenScope.WRITE, sid="w"))
     await manager.add_token("acct", _refresh_token(TokenScope.READ, sid="r"))
@@ -274,7 +274,7 @@ async def test_from_account_reads_the_accounts_file(tmp_path: Path) -> None:
 async def test_from_account_names_the_account_from_the_environment(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    seen: list[httpx.Request] = []
+    seen: list[httpx2.Request] = []
     manager = AccountManager.from_file(tmp_path / "accounts.json")
     await manager.add_token("acct", _refresh_token(TokenScope.READ, sid="r"))
     monkeypatch.setenv("BACSY_ACCOUNT", "acct")
@@ -293,7 +293,7 @@ async def test_from_account_ignores_the_refresh_token_variable(
 ) -> None:
     """``BACSY_REFRESH_TOKEN`` neither supplies a name nor replaces the accounts file."""
     monkeypatch.setenv("BACSY_REFRESH_TOKEN", _refresh_token(TokenScope.READ, sid="env"))
-    seen: list[httpx.Request] = []
+    seen: list[httpx2.Request] = []
 
     with pytest.raises(ConfigurationError, match="no account name given"):
         TradeApiClient.from_account(http=_pool(seen), config=NO_PACING)
@@ -306,7 +306,7 @@ async def test_from_account_ignores_the_refresh_token_variable(
 
 
 async def test_from_refresh_token_exchanges_before_first_request() -> None:
-    seen: list[httpx.Request] = []
+    seen: list[httpx2.Request] = []
     value = _refresh_token(TokenScope.WRITE, sid="w")
 
     async with TradeApiClient.from_refresh_token(
@@ -325,7 +325,7 @@ async def test_from_refresh_token_exchanges_before_first_request() -> None:
 
 
 async def test_from_refresh_token_accepts_several_tokens() -> None:
-    seen: list[httpx.Request] = []
+    seen: list[httpx2.Request] = []
     tokens = [_refresh_token(TokenScope.WRITE, sid="w"), _refresh_token(TokenScope.READ, sid="r")]
 
     client = TradeApiClient.from_refresh_token(
@@ -340,7 +340,7 @@ async def test_from_refresh_token_reads_the_environment(monkeypatch: pytest.Monk
     read = _refresh_token(TokenScope.READ, sid="r")
     write = _refresh_token(TokenScope.WRITE, sid="w")
     monkeypatch.setenv("BACSY_REFRESH_TOKEN", f"{read}, \n{write}")
-    seen: list[httpx.Request] = []
+    seen: list[httpx2.Request] = []
 
     client = TradeApiClient.from_refresh_token(
         http=_pool(seen), cache=MemoryAccessTokenCache(), config=NO_PACING
@@ -363,7 +363,7 @@ async def test_from_refresh_token_caches_access_tokens_in_the_state_directory(
     tmp_path: Path,
 ) -> None:
     """Two runs holding the same refresh token exchange it once, not once each."""
-    seen: list[httpx.Request] = []
+    seen: list[httpx2.Request] = []
     value = _refresh_token(TokenScope.READ, sid="shared")
 
     for _ in range(2):
@@ -378,7 +378,7 @@ async def test_from_refresh_token_caches_access_tokens_in_the_state_directory(
 
 
 async def test_an_injected_cache_keeps_access_tokens_off_disk(tmp_path: Path) -> None:
-    seen: list[httpx.Request] = []
+    seen: list[httpx2.Request] = []
     value = _refresh_token(TokenScope.READ, sid="shared")
 
     for _ in range(2):
@@ -403,7 +403,7 @@ async def test_from_refresh_token_works_without_a_state_directory(
         raise RuntimeError(msg)
 
     monkeypatch.setattr(Path, "home", staticmethod(_no_home))
-    seen: list[httpx.Request] = []
+    seen: list[httpx2.Request] = []
 
     with caplog.at_level(logging.WARNING, logger="bacsy.auth"):
         client = TradeApiClient.from_refresh_token(
@@ -430,7 +430,7 @@ async def test_from_account_works_without_a_state_directory(
         raise RuntimeError(msg)
 
     monkeypatch.setattr(Path, "home", staticmethod(_no_home))
-    seen: list[httpx.Request] = []
+    seen: list[httpx2.Request] = []
 
     with caplog.at_level(logging.WARNING, logger="bacsy.auth"):
         client = TradeApiClient.from_account(
@@ -451,7 +451,7 @@ async def test_from_refresh_token_survives_an_unusable_state_directory(
     blocker = tmp_path / "blocker"
     blocker.write_text("")
     monkeypatch.setenv("BACSY_STATE_DIR", str(blocker))
-    seen: list[httpx.Request] = []
+    seen: list[httpx2.Request] = []
 
     with caplog.at_level(logging.WARNING, logger="bacsy.auth"):
         client = TradeApiClient.from_refresh_token(
@@ -473,7 +473,7 @@ def test_undecodable_refresh_token_fails_at_construction() -> None:
     assert "not-a-token-at-all" not in str(info.value)
 
 
-def _pool(seen: list[httpx.Request]) -> httpx.AsyncClient:
-    return httpx.AsyncClient(
-        transport=httpx.MockTransport(_recording_handler(seen)), base_url="https://be.broker.ru"
+def _pool(seen: list[httpx2.Request]) -> httpx2.AsyncClient:
+    return httpx2.AsyncClient(
+        transport=httpx2.MockTransport(_recording_handler(seen)), base_url="https://be.broker.ru"
     )

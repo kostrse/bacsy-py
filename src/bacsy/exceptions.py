@@ -25,7 +25,7 @@ from bacsy.models.errors import ApiErrorBody, ApiFieldError
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    import httpx
+    import httpx2
 
     from bacsy._json import JsonValue
     from bacsy.auth.tokens import TokenScope
@@ -410,7 +410,7 @@ def parse_error_body(text: str) -> ApiErrorBody | None:
         return None
 
 
-def error_for_response(response: httpx.Response, *, message: str) -> BacsyError:
+def error_for_response(response: httpx2.Response, *, message: str) -> BacsyError:
     """Build the error for an unsuccessful `response`."""
     text = response.text
     return error_for_status(
