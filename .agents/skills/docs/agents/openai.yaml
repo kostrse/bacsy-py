@@ -1,0 +1,4 @@
+interface:
+  display_name: "Documentation"
+  short_description: "Work on the bacsy documentation site in English and Russian"
+  default_prompt: "Use $docs to work on the bacsy documentation site."

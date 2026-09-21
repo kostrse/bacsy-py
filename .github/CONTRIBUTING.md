@@ -37,6 +37,24 @@ A change is done when all four checks pass. `uv run ruff format .` and
 `uv run ruff check --fix .` apply the automatic fixes. Every module starts with a
 docstring that states its role and its contract; read it before editing the module.
 
+## Documentation
+
+The documentation site is built by Zensical, once per language: `zensical.toml` builds
+`docs/en/` and `zensical.ru.toml` builds `docs/ru/`, which hold the same pages under the
+same names. The API reference is generated from docstrings, so a public docstring is
+documentation too.
+
+Preview one language with `uv run --group docs zensical serve`, adding
+`-f zensical.ru.toml` for Russian. When you change `docs/`, a configuration or a public
+docstring, also run:
+
+```bash
+uv run .github/scripts/build_docs.py --no-release
+```
+
+It builds the site the way the `Documentation` workflow does and fails on a broken link
+or an unresolved reference.
+
 ## Conventions
 
 These are the things a review checks.

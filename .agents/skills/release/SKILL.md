@@ -10,9 +10,22 @@ metadata:
 # Release
 
 Prepare a bacsy release on `main` and stop for the maintainer's approval before anything
-leaves the machine. The release itself is the tag push: `.github/workflows/release.yml`
-verifies the tag, runs the checks, builds, publishes to PyPI and creates the GitHub
-Release. Read the "Releases" section of `AGENTS.md` first.
+leaves the machine. Read the "Releases" section of `AGENTS.md` first.
+
+Versions are plain `0.X.Y` until 1.0, with no beta or dev suffix on `main`. A PEP 440
+pre-release such as `0.2.0b1` is allowed for a preview; its tag is `v0.2.0b1` and the
+GitHub Release is marked as a pre-release.
+
+The release itself is the tag push, which runs two workflows:
+
+- `.github/workflows/release.yml` fails if the tag and the project version differ, runs
+  the four checks, builds, publishes to PyPI through Trusted Publishing (no PyPI token
+  exists anywhere) and only then creates the GitHub Release, with the notes that
+  `.github/scripts/release_notes.py` extracts from the changelog and the built files
+  attached. A manual dispatch of the same workflow publishes the current branch to
+  TestPyPI as a dry run and creates no release.
+- `.github/workflows/docs.yml` republishes the documentation site with the new release
+  as `stable`.
 
 ## 1. Preconditions
 
