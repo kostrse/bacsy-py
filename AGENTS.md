@@ -205,8 +205,6 @@ saves, removes, prunes and verifies them.
   Private helpers need one only when their contract is non-obvious.
 - Describe current, verified behaviour. No work history, plans or defensive justification.
 - Loggers are `bacsy` and its children. Never log a token value or an account identifier.
-- A commit you help write carries the trailer `Assisted-by: <agent name>`. Never add
-  `Co-authored-by`, `Signed-off-by` or any other trailer that names an AI as an author.
 
 ## Testing
 
@@ -250,6 +248,14 @@ Every user-visible change (public interface, command line, behaviour, dependenci
 supported Python versions) adds an entry under `## [Unreleased]` in `CHANGELOG.md` in the
 same commit, under Added, Changed, Deprecated, Removed, Fixed or Security. Entries use
 inline links, since a release's notes are that section's body alone.
+
+## Commits and pull requests
+
+- A commit you help write carries the trailer `Assisted-by: <agent name>`. Never add
+  `Co-authored-by`, `Signed-off-by` or any other trailer that names an AI as an author.
+- In a pull request checklist, tick only what you verified about the diff. The item that
+  says the author has read and understood every line is the person's own attestation:
+  leave it unchecked for them to tick themselves.
 
 ## Releases
 

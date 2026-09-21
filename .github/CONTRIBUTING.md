@@ -111,16 +111,16 @@ behind a change, not about which tool helped.
 - Disclose assistance in the commits: add the trailer `Assisted-by: <tool>` (for
   example `Assisted-by: Claude Code`) to a commit the tool helped write. Never list an
   AI as `Co-authored-by`; only people are authors.
-- Write the pull request description, commit messages, issue text and review replies
-  yourself.
-- A pull request or issue opened by an agent on its own, without a person who has read
-  it, is closed.
+- A tool may draft the pull request description, commit messages, issue text and review
+  replies, but you have read and understood what is posted in your name, and you tick
+  the pull request checklist yourself.
 - Do not use AI tools on issues labelled `good first issue`; those exist for people to
   learn the codebase.
 - A bug or vulnerability found with an AI tool must say so and include a reproduction
   you ran yourself.
-- A pull request or issue that shows no sign of a person having read it may be closed
-  without review, and repeat submissions may be blocked.
+- A pull request or issue that shows no sign of a person having read it, such as one an
+  agent opened on its own, may be closed without review, and repeat submissions may be
+  blocked.
 
 The same rules apply to the maintainer's own commits.
 
