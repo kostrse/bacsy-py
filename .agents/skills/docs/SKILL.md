@@ -33,7 +33,9 @@ between runs and there is no `gh-pages` branch:
 - `<lang>/dev/` from `main`;
 - `<lang>/X.Y.Z/` from the newest `vX.Y.Z` tag, checked out into a temporary worktree
   and built with that tag's own lock file, with `<lang>/stable/` as a copy;
-- `<lang>/versions.json` for the version selector and redirects from `/` and `/<lang>/`.
+- `<lang>/versions.json` for the version selector, and two redirect pages: the root
+  sends the reader to the language their browser prefers, `/<lang>/` to the default
+  version.
 
 A tag that predates the documentation is skipped, and the site then holds `dev` alone.
 `MIKE_DOCS_VERSION` in the environment tells Zensical which version it is building; no

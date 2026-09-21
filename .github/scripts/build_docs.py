@@ -8,7 +8,8 @@ out into a temporary worktree and built with that tag's own lock file. The relea
 published under its number with a ``stable`` copy; a tag that predates the documentation
 is skipped, and the site then holds ``dev`` alone. The output is::
 
-    <out>/index.html            redirect to en/stable/ (en/dev/ without a release)
+    <out>/index.html            redirect to the browser's language, <lang>/stable/
+                                (<lang>/dev/ without a release)
     <out>/<lang>/index.html     redirect to stable/ (dev/ without a release)
     <out>/<lang>/versions.json  what the version selector reads
     <out>/<lang>/<version>/     one built site per version: dev, X.Y.Z, stable
@@ -33,6 +34,9 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CONFIGS = {"en": "zensical.toml", "ru": "zensical.ru.toml"}
 """Language code to the Zensical configuration that builds it, in selector order."""
+
+LANGUAGE_LABELS = {"en": "Documentation in English", "ru": "Документация на русском"}
+"""Language code to the link the root page offers, written in that language."""
 
 DEV = "dev"
 STABLE = "stable"
@@ -61,8 +65,51 @@ def versions_json(release: str | None) -> str:
     return json.dumps(versions, indent=2) + "\n"
 
 
-def redirect_html(target: str) -> str:
-    """Return a page that sends the browser to the relative URL ``target``."""
+def lang_redirect_html(default: str) -> str:
+    """Return the root page, which sends the browser to the language it prefers.
+
+    The languages come from ``CONFIGS`` in order; a browser that matches none of them,
+    or has no JavaScript, gets the first one.
+    """
+    available = json.dumps(list(CONFIGS))
+    fallback = next(iter(CONFIGS))
+    links = "\n".join(
+        f'  <li><a href="{lang}/{default}/">{LANGUAGE_LABELS[lang]}</a></li>' for lang in CONFIGS
+    )
+    return (
+        "<!DOCTYPE html>\n"
+        f'<html lang="{fallback}">\n'
+        "<head>\n"
+        '<meta charset="utf-8">\n'
+        "<title>Redirecting</title>\n"
+        "<script>\n"
+        f"var available = {available};\n"
+        f'var fallback = "{fallback}";\n'
+        f'var version = "{default}";\n'
+        "var preferred = navigator.languages || [navigator.language || fallback];\n"
+        "var lang = fallback;\n"
+        "for (var i = 0; i < preferred.length; i++) {\n"
+        '  var base = (preferred[i] || "").toLowerCase().split(/[-_]/)[0];\n'
+        "  if (available.indexOf(base) !== -1) { lang = base; break; }\n"
+        "}\n"
+        'location.replace(lang + "/" + version + "/");\n'
+        "</script>\n"
+        f'<noscript><meta http-equiv="refresh" content="0; url={fallback}/{default}/">'
+        "</noscript>\n"
+        f'<link rel="canonical" href="{fallback}/{default}/">\n'
+        "</head>\n"
+        "<body>\n"
+        "<ul>\n"
+        f"{links}\n"
+        "</ul>\n"
+        "</body>\n"
+        "</html>\n"
+    )
+
+
+def version_redirect_html(default: str) -> str:
+    """Return a language's index page, which sends the browser to the default version."""
+    target = f"{default}/"
     return (
         "<!DOCTYPE html>\n"
         '<html lang="en">\n'
@@ -134,9 +181,8 @@ def assemble(out: Path, *, with_release: bool) -> None:
     default = STABLE if release is not None else DEV
     for lang in CONFIGS:
         (out / lang / "versions.json").write_text(versions_json(release), encoding="utf-8")
-        (out / lang / "index.html").write_text(redirect_html(f"{default}/"), encoding="utf-8")
-    first = next(iter(CONFIGS))
-    (out / "index.html").write_text(redirect_html(f"{first}/{default}/"), encoding="utf-8")
+        (out / lang / "index.html").write_text(version_redirect_html(default), encoding="utf-8")
+    (out / "index.html").write_text(lang_redirect_html(default), encoding="utf-8")
     (out / ".nojekyll").touch()
 
 
