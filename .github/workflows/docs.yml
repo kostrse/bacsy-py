@@ -1,20 +1,26 @@
 name: Documentation
 
 # Builds the documentation site on every push and pull request, and publishes it to GitHub
-# Pages on pushes to main and on release tags. The site is assembled from scratch each
-# time by .github/scripts/build_docs.py: dev from the pushed tree, the newest release from
-# its tag. Nothing is kept between runs, so there is no gh-pages branch.
+# Pages on pushes to main. The release workflow calls this one after publishing a final
+# release. The site is assembled from scratch each time by .github/scripts/build_docs.py:
+# dev from main, stable from the newest published release. Nothing is kept between runs,
+# so there is no gh-pages branch.
 
 on:
   push:
     branches: [main]
-    tags: ["v*"]
   pull_request:
     branches: [main]
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      release_tag:
+        description: Final release tag that passed the release workflow
+        required: true
+        type: string
 
 concurrency:
-  group: docs-${{ github.ref }}
+  group: docs-${{ github.event_name == 'pull_request' && github.ref || 'pages' }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
@@ -30,6 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          ref: ${{ github.event_name == 'pull_request' && github.ref || 'main' }}
           fetch-depth: 0
           fetch-tags: true
 
@@ -41,8 +48,31 @@ jobs:
       - name: Install dependencies
         run: uv sync --group docs
 
-      - name: Assemble the site
-        run: uv run .github/scripts/build_docs.py
+      - name: Find the newest published release
+        if: github.event_name != 'pull_request' && inputs.release_tag == ''
+        id: published-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="$(gh release list --repo "$GITHUB_REPOSITORY" \
+            --exclude-drafts --exclude-pre-releases --limit 1 \
+            --json tagName --jq '.[0].tagName // ""')"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Assemble the pull request site
+        if: github.event_name == 'pull_request'
+        run: uv run .github/scripts/build_docs.py --no-release
+
+      - name: Assemble the published site
+        if: github.event_name != 'pull_request'
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag || steps.published-release.outputs.tag }}
+        run: |
+          if [ -n "$RELEASE_TAG" ]; then
+            uv run .github/scripts/build_docs.py --release-tag "$RELEASE_TAG"
+          else
+            uv run .github/scripts/build_docs.py --no-release
+          fi
 
       - name: Upload the site
         uses: actions/upload-pages-artifact@v5

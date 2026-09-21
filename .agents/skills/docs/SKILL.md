@@ -17,7 +17,7 @@ zensical.ru.toml              Russian build: docs_dir docs/ru, site_dir site/ru
 docs/en/, docs/ru/            the page trees, identical paths and file names
 docs/<lang>/reference/        one page per top-level public module, `::: bacsy.<name>`
 .github/scripts/build_docs.py assembles site/pages/ for GitHub Pages
-.github/workflows/docs.yml    builds on pull requests, publishes on main and release tags
+.github/workflows/docs.yml    builds on pull requests, publishes on main and after releases
 site/                         build output, ignored by git
 ```
 
@@ -31,15 +31,17 @@ key is made in both files.
 between runs and there is no `gh-pages` branch:
 
 - `<lang>/dev/` from `main`;
-- `<lang>/X.Y.Z/` from the newest `vX.Y.Z` tag, checked out into a temporary worktree
-  and built with that tag's own lock file, with `<lang>/stable/` as a copy;
+- `<lang>/X.Y.Z/` from the newest published final release, checked out by tag into a
+  temporary worktree and built with that tag's own lock file, with `<lang>/stable/` as a
+  copy;
 - `<lang>/versions.json` for the version selector, and two redirect pages: the root
   sends the reader to the language their browser prefers, `/<lang>/` to the default
   version.
 
 A tag that predates the documentation is skipped, and the site then holds `dev` alone.
-`MIKE_DOCS_VERSION` in the environment tells Zensical which version it is building; no
-mike installation is involved.
+The workflow passes the published release tag explicitly; a local full build discovers
+the newest matching local tag when `--release-tag` is omitted. `MIKE_DOCS_VERSION` in the
+environment tells Zensical which version it is building; no mike installation is involved.
 
 ## Commands
 
@@ -48,6 +50,7 @@ uv run --group docs zensical serve                       # preview English
 uv run --group docs zensical serve -f zensical.ru.toml   # preview Russian
 uv run .github/scripts/build_docs.py --no-release        # the check: both languages, strict
 uv run .github/scripts/build_docs.py                     # the full site, as the workflow builds it
+uv run .github/scripts/build_docs.py --release-tag vX.Y.Z # select one final release
 ```
 
 Strict mode fails on a broken `.md` link, a missing anchor or an unresolved cross

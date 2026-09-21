@@ -166,3 +166,18 @@ jobs:
             --title "bacsy $VERSION" \
             --notes-file "$RUNNER_TEMP/notes.md" \
             "${flags[@]}"
+
+  publish-docs:
+    name: Publish documentation
+    needs: [build, github-release]
+    if: github.ref_type == 'tag' && needs.build.outputs.prerelease == 'false'
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/docs.yml
+    with:
+      release_tag: ${{ github.ref_name }}

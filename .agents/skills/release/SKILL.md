@@ -16,16 +16,16 @@ Versions are plain `0.X.Y` until 1.0, with no beta or dev suffix on `main`. A PE
 pre-release such as `0.2.0b1` is allowed for a preview; its tag is `v0.2.0b1` and the
 GitHub Release is marked as a pre-release.
 
-The release itself is the tag push, which runs two workflows:
+The release itself is the tag push, which runs the release workflow:
 
 - `.github/workflows/release.yml` fails if the tag and the project version differ, runs
   the four checks, builds, publishes to PyPI through Trusted Publishing (no PyPI token
   exists anywhere) and only then creates the GitHub Release, with the notes that
   `.github/scripts/release_notes.py` extracts from the changelog and the built files
-  attached. A manual dispatch of the same workflow publishes the current branch to
-  TestPyPI as a dry run and creates no release.
-- `.github/workflows/docs.yml` republishes the documentation site with the new release
-  as `stable`.
+  attached. After a final release succeeds, it calls `.github/workflows/docs.yml` to
+  republish the documentation site with that release as `stable`. A manual dispatch of
+  the release workflow publishes the current branch to TestPyPI as a dry run and creates
+  no release.
 
 ## 1. Preconditions
 

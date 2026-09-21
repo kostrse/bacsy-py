@@ -1,12 +1,14 @@
 """Assemble the documentation site that GitHub Pages serves.
 
-Usage: ``build_docs.py [--no-release] [--out DIR]``
+Usage: ``build_docs.py [--no-release | --release-tag TAG] [--out DIR]``
 
 Each language has its own Zensical configuration at the repository root and is built
-twice: ``dev`` from the working tree and the newest release from its ``vX.Y.Z`` tag, checked
-out into a temporary worktree and built with that tag's own lock file. The release is
-published under its number with a ``stable`` copy; a tag that predates the documentation
-is skipped, and the site then holds ``dev`` alone. The output is::
+twice: ``dev`` from the working tree and a release from its ``vX.Y.Z`` tag, checked out
+into a temporary worktree and built with that tag's own lock file. By default the release
+is the newest matching local tag; the publishing workflow supplies the newest published
+GitHub Release explicitly. The release is published under its number with a ``stable``
+copy; a tag that predates the documentation is skipped, and the site then holds ``dev``
+alone. The output is::
 
     <out>/index.html            redirect to the browser's language, <lang>/stable/
                                 (<lang>/dev/ without a release)
@@ -167,15 +169,18 @@ def build_release(tag: str, out: Path) -> bool:
     return True
 
 
-def assemble(out: Path, *, with_release: bool) -> None:
-    """Build every version of every language into ``out`` and add the site-wide files."""
+def assemble(out: Path, *, with_release: bool, release_tag: str | None = None) -> None:
+    """Build every version of every language into ``out`` and add the site-wide files.
+
+    An explicit ``release_tag`` overrides discovery of the newest matching local tag.
+    """
     if out.exists():
         shutil.rmtree(out)
     for lang in CONFIGS:
         build(REPO_ROOT, lang, DEV, out / lang / DEV)
     release: str | None = None
     if with_release:
-        tag = newest_release_tag(git("tag", "--list").split())
+        tag = release_tag or newest_release_tag(git("tag", "--list").split())
         if tag is not None and build_release(tag, out):
             release = tag.removeprefix("v")
     default = STABLE if release is not None else DEV
@@ -188,10 +193,16 @@ def assemble(out: Path, *, with_release: bool) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Assemble the documentation site.")
-    parser.add_argument(
+    release = parser.add_mutually_exclusive_group()
+    release.add_argument(
         "--no-release",
         action="store_true",
         help="build only dev from the working tree, skipping the newest release tag",
+    )
+    release.add_argument(
+        "--release-tag",
+        metavar="TAG",
+        help="build this final release tag (vX.Y.Z) instead of discovering the newest one",
     )
     parser.add_argument(
         "--out",
@@ -202,8 +213,11 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     out: Path = args.out.resolve()
     no_release: bool = args.no_release
+    release_tag: str | None = args.release_tag
+    if release_tag is not None and not _RELEASE_TAG.match(release_tag):
+        parser.error(f"--release-tag must be a final release tag vX.Y.Z, not {release_tag!r}")
     try:
-        assemble(out, with_release=not no_release)
+        assemble(out, with_release=not no_release, release_tag=release_tag)
     except subprocess.CalledProcessError as error:
         command = " ".join(str(part) for part in error.cmd)
         sys.stderr.write(f"{command}: exit status {error.returncode}\n")
