@@ -19,6 +19,10 @@ alone. The output is::
 ``MIKE_DOCS_VERSION`` tells Zensical which version a build is, so canonical URLs and the
 version selector point at ``<lang>/<version>/``. Every build runs in strict mode and a
 failing one fails the script.
+
+The default output is ``site/pages``. A custom output elsewhere in the repository is
+rejected. Outside the repository, an existing non-empty directory is replaced only when
+it carries the marker written by an earlier successful or partial build.
 """
 
 from __future__ import annotations
@@ -34,6 +38,7 @@ import tempfile
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_OUT = REPO_ROOT / "site" / "pages"
 CONFIGS = {"en": "zensical.toml", "ru": "zensical.ru.toml"}
 """Language code to the Zensical configuration that builds it, in selector order."""
 
@@ -44,6 +49,8 @@ DEV = "dev"
 STABLE = "stable"
 _RELEASE_TAG = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
 """A final release tag; pre-releases never become ``stable``."""
+
+_OUTPUT_MARKER = ".bacsy-docs-output"
 
 
 def newest_release_tag(tags: list[str]) -> str | None:
@@ -169,13 +176,30 @@ def build_release(tag: str, out: Path) -> bool:
     return True
 
 
+def reset_output_directory(out: Path) -> None:
+    """Replace ``out`` after verifying that it is dedicated documentation output."""
+    if out == REPO_ROOT or out in REPO_ROOT.parents:
+        raise ValueError(f"refusing to replace repository path or ancestor: {out}")
+    if out.is_relative_to(REPO_ROOT) and not out.is_relative_to(DEFAULT_OUT):
+        raise ValueError(f"output inside the repository must be under {DEFAULT_OUT}: {out}")
+    if out.exists():
+        if not out.is_dir():
+            raise ValueError(f"output path exists and is not a directory: {out}")
+        is_empty = next(out.iterdir(), None) is None
+        is_marked = (out / _OUTPUT_MARKER).is_file()
+        if out != DEFAULT_OUT and not is_empty and not is_marked:
+            raise ValueError(f"refusing to replace non-output directory: {out}")
+        shutil.rmtree(out)
+    out.mkdir(parents=True)
+    (out / _OUTPUT_MARKER).touch()
+
+
 def assemble(out: Path, *, with_release: bool, release_tag: str | None = None) -> None:
     """Build every version of every language into ``out`` and add the site-wide files.
 
     An explicit ``release_tag`` overrides discovery of the newest matching local tag.
     """
-    if out.exists():
-        shutil.rmtree(out)
+    reset_output_directory(out)
     for lang in CONFIGS:
         build(REPO_ROOT, lang, DEV, out / lang / DEV)
     release: str | None = None
@@ -207,7 +231,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--out",
         type=Path,
-        default=REPO_ROOT / "site" / "pages",
+        default=DEFAULT_OUT,
         help="the directory to assemble the site in (default: site/pages)",
     )
     args = parser.parse_args(argv)
@@ -218,6 +242,8 @@ def main(argv: list[str] | None = None) -> int:
         parser.error(f"--release-tag must be a final release tag vX.Y.Z, not {release_tag!r}")
     try:
         assemble(out, with_release=not no_release, release_tag=release_tag)
+    except ValueError as error:
+        parser.error(str(error))
     except subprocess.CalledProcessError as error:
         command = " ".join(str(part) for part in error.cmd)
         sys.stderr.write(f"{command}: exit status {error.returncode}\n")
