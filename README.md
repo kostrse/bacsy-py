@@ -47,6 +47,9 @@ async with TradeApiClient.from_account("main") as client:
 
 ## Documentation
 
+- [Documentation](https://kostrse.github.io/bacsy-py/en/) in English
+- [Документация](https://kostrse.github.io/bacsy-py/ru/) на русском
+
 For upstream service rules, see the [official BCS Trade API documentation](https://trade-api.bcs.ru/).
 
 ## Status and versioning

@@ -37,6 +37,24 @@ A change is done when all four checks pass. `uv run ruff format .` and
 `uv run ruff check --fix .` apply the automatic fixes. Every module starts with a
 docstring that states its role and its contract; read it before editing the module.
 
+## Documentation
+
+The documentation site is built by Zensical, once per language: `zensical.toml` builds
+`docs/en/` and `zensical.ru.toml` builds `docs/ru/`, which hold the same pages under the
+same names. The API reference is generated from docstrings, so a public docstring is
+documentation too.
+
+Preview one language with `uv run --group docs zensical serve`, adding
+`-f zensical.ru.toml` for Russian. When you change `docs/`, a configuration or a public
+docstring, also run:
+
+```bash
+uv run .github/scripts/build_docs.py --no-release
+```
+
+It builds the site the way the `Documentation` workflow does and fails on a broken link
+or an unresolved reference.
+
 ## Conventions
 
 These are the things a review checks.
@@ -93,16 +111,16 @@ behind a change, not about which tool helped.
 - Disclose assistance in the commits: add the trailer `Assisted-by: <tool>` (for
   example `Assisted-by: Claude Code`) to a commit the tool helped write. Never list an
   AI as `Co-authored-by`; only people are authors.
-- Write the pull request description, commit messages, issue text and review replies
-  yourself.
-- A pull request or issue opened by an agent on its own, without a person who has read
-  it, is closed.
+- A tool may draft the pull request description, commit messages, issue text and review
+  replies, but you have read and understood what is posted in your name, and you tick
+  the pull request checklist yourself.
 - Do not use AI tools on issues labelled `good first issue`; those exist for people to
   learn the codebase.
 - A bug or vulnerability found with an AI tool must say so and include a reproduction
   you ran yourself.
-- A pull request or issue that shows no sign of a person having read it may be closed
-  without review, and repeat submissions may be blocked.
+- A pull request or issue that shows no sign of a person having read it, such as one an
+  agent opened on its own, may be closed without review, and repeat submissions may be
+  blocked.
 
 The same rules apply to the maintainer's own commits.
 
