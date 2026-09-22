@@ -26,8 +26,8 @@ as one site. `SKILL.md` covers the mechanics; this file covers the words.
 ## Terminology
 
 The exact terms are **refresh token** and **access token**. The BCS web terminal calls the
-credential it issues an "API token"; Introduction, Installation, Quickstart and Accounts and
-tokens bridge once, on first use, as "API token (refresh token)", and then say "refresh token"
+credential it issues an "API token"; Introduction, Quickstart and Accounts and tokens bridge
+once, on first use, as "API token (refresh token)", and then say "refresh token"
 where access tokens are also in play and plain "token" where they are not. No other page
 says "API token".
 

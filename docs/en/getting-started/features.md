@@ -91,5 +91,5 @@ for the service's rules, limits and instrument universe. What it guarantees is t
 call you make is typed, paced within the API's limits, authenticated with the least
 privileged token you hold, and retried only when retrying is safe.
 
-Ready to try it? [Install the package](installation.md) and follow the
-[Quickstart](quickstart.md).
+Ready to try it? The [Quickstart](quickstart.md) installs the package and gets you to your
+first quote.

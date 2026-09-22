@@ -16,9 +16,9 @@ watch = ["src/bacsy"]
 nav = [
   { "Getting started" = [
     { "Introduction" = "index.md" },
-    { "Features" = "getting-started/features.md" },
-    { "Installation" = "getting-started/installation.md" },
     { "Quickstart" = "getting-started/quickstart.md" },
+    { "Features" = "getting-started/features.md" },
+    { "Getting help" = "getting-started/getting-help.md" },
   ] },
   { "Guides" = [
     { "Accounts and tokens" = "guides/accounts-and-tokens.md" },

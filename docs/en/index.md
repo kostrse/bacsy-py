@@ -23,8 +23,7 @@ async with TradeApiClient.from_account("main") as client:
         print(quote.ticker, quote.last)
 ```
 
-[Installation](getting-started/installation.md) covers what you need, the
-[Quickstart](getting-started/quickstart.md) takes it from there, and
+The [Quickstart](getting-started/quickstart.md) takes it from there, and
 [Features](getting-started/features.md) says what the library does for you beyond a
 plain HTTP wrapper.
 
