@@ -48,6 +48,9 @@ jobs:
       - name: Install dependencies
         run: uv sync --group docs
 
+      - name: Check the examples
+        run: uv run .github/scripts/check_docs_examples.py
+
       - name: Find the newest published release
         if: github.event_name != 'pull_request' && inputs.release_tag == ''
         id: published-release

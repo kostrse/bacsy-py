@@ -1,5 +1,5 @@
-# bacsy.exceptions
+# Исключения
 
-Сформировано из докстрингов `bacsy.exceptions`.
+!!! note
 
-::: bacsy.exceptions
+    Эта страница ещё не написана.

@@ -8,6 +8,12 @@ minor release may contain breaking changes; they are listed under "Changed" or "
 
 ## [Unreleased]
 
+### Added
+
+- The documentation site: a [Quickstart](https://kostrse.github.io/bacsy-py/en/),
+  guides, concepts and an API reference by topic, in English; the Russian pages are
+  placeholders for now.
+
 ### Changed
 
 - Replaced `httpx` with [`httpx2`](https://pydantic.dev/docs/httpx2/get-started/migration/).
