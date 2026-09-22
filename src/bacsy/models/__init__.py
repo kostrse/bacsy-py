@@ -19,6 +19,7 @@ from bacsy.models.base import (
 )
 from bacsy.models.common import (
     Board,
+    HasInstrumentKey,
     InstrumentKey,
     InstrumentLike,
     InstrumentRef,
@@ -175,6 +176,7 @@ __all__ = [
     "FuturesLimit",
     "FuturesMoneyPosition",
     "FuturesPosition",
+    "HasInstrumentKey",
     "Index",
     "Instrument",
     "InstrumentDiscount",

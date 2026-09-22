@@ -50,8 +50,12 @@ class InstrumentKey(RequestModel):
 
         Raises:
             TypeError: If ``value`` has no `key`, or its `key` is not an `InstrumentKey`.
-            ValueError: If its `key` is ``None`` because the ticker or class code is missing.
+            ValueError: If its `key` is ``None`` because the ticker or class code is
+                missing, or a tuple does not hold exactly a ticker and a class code.
         """
+        if isinstance(value, tuple):
+            ticker, class_code = value
+            return cls(ticker=ticker, class_code=class_code)
         # Typed as object so the guards also hold for unchecked callers.
         key: object = getattr(value, "key", _NO_KEY)
         if key is _NO_KEY:
@@ -72,17 +76,21 @@ class InstrumentKey(RequestModel):
 
 
 @runtime_checkable
-class InstrumentLike(Protocol):
-    """Anything that names an instrument: a key, a position, an instrument, a quote.
-
-    Every such argument is accepted where the client takes instruments, through
-    `InstrumentKey.coerce`.
-    """
+class HasInstrumentKey(Protocol):
+    """An object that names an instrument: a key, a position, an instrument, a quote."""
 
     @property
     def key(self) -> InstrumentKey | None:
         """The instrument's key, or ``None`` when the ticker or class code is missing."""
         ...
+
+
+type InstrumentLike = HasInstrumentKey | tuple[str, str]
+"""Anything the client accepts where it takes instruments, through `InstrumentKey.coerce`.
+
+A ``(ticker, class_code)`` tuple such as ``("SBER", "TQBR")`` works alongside keys and the
+records that carry one.
+"""
 
 
 class InstrumentRef(BaseApiModel):

@@ -14,6 +14,12 @@ minor release may contain breaking changes; they are listed under "Changed" or "
   Injected HTTP pools must now be `httpx2.AsyncClient` instances; the default pool uses
   the operating system's trust store for TLS verification.
 
+### Fixed
+
+- `(ticker, class_code)` tuples such as `("SBER", "TQBR")` are accepted wherever the client
+  takes instruments, as the README always showed. `InstrumentLike` is now the union of the
+  new `HasInstrumentKey` protocol and such a tuple.
+
 ## [0.1.0] - 2026-09-20
 
 ### Added
