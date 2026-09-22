@@ -14,8 +14,9 @@ site_dir = "site/en"
 watch = ["src/bacsy"]
 
 nav = [
-  { "Home" = "index.md" },
   { "Getting started" = [
+    { "Introduction" = "index.md" },
+    { "Features" = "getting-started/features.md" },
     { "Installation" = "getting-started/installation.md" },
     { "Quickstart" = "getting-started/quickstart.md" },
   ] },

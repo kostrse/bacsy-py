@@ -14,8 +14,9 @@ site_dir = "site/ru"
 watch = ["src/bacsy"]
 
 nav = [
-  { "Главная" = "index.md" },
   { "Начало работы" = [
+    { "Введение" = "index.md" },
+    { "Возможности" = "getting-started/features.md" },
     { "Установка" = "getting-started/installation.md" },
     { "Быстрый старт" = "getting-started/quickstart.md" },
   ] },
